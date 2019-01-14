@@ -1,5 +1,5 @@
 import msgpack
-import custom_types
+import codec.custom_types
 
 def pair_hook(data):
    res = {}
@@ -22,7 +22,7 @@ class Decoder(object):
 
 
    def DecodeMap(self, m):
-      res = custom_types.hashdict()
+      res = codec.custom_types.hashdict()
       for k, v in m.items():
          res[self.postProcess(k)] = self.postProcess(v)
       return res

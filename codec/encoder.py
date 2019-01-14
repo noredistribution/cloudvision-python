@@ -1,6 +1,6 @@
 import msgpack
 import io
-import custom_types
+import codec.custom_types
 from collections import OrderedDict
 
 class Encoder(object):
