@@ -26,10 +26,11 @@ def CreateQuery(pathKeys, dId, dtype="device"):
 def CreateNotification(secs, nano, paths, deletes=None, updates=None, retracts=None):
    encoder = codec.Encoder()
    ts = Timestamp(seconds=secs, nanos=nano)
+   dels = upd = ret = None
    if deletes is not None:
       dels = [encoder.Encode(d) for d in deletes]
    if updates is not None:
-      upd = [ntf.Update(key=encoder.Encode(k), value=encoder.Encode(v)) for k, v in updates]
+      upd = [ntf.Notification.Update(key=encoder.Encode(k), value=encoder.Encode(v)) for k, v in updates]
    if retracts is not None:
       ret = [encoder.Encoder(r) for r in retracts]
    pathElts = [encoder.Encode(elt) for elt in paths]
@@ -55,32 +56,38 @@ class GRPCClient(object):
       self.encoder = codec.Encoder()
       self.decoder = codec.Decoder()
 
-   def Get(self, querries, start=None, end=None, versions=None):
+   def Get(self, querries, start=None, end=None, versions=None, sharding=None):
       res = rtr.GetRequest(
          query=querries,
          start=start,
          end=end,
          versions=versions
       )
+      # if sharding is not None:
+      #    res.sharded_sub = sharding
       stream = self.__client.Get(res)
-      return stream
+      return (self.DecodeNotificationBatch(nb) for nb in stream)
 
-   def Subscribe(self, querries):
+   def Subscribe(self, querries, sharding=None):
       req = rtr.SubscribeRequest(
          query=querries
       )
+      if sharding is not None:
+         res.sharded_sub = sharding
       stream = self.__client.Subscribe(req)
-      return stream
+      return (self.DecodeNotificationBatch(nb) for nb in stream)
 
    def Publish(self, dtype, dId, sync, compare, notifs):
       req = rtr.PublishRequest(
-         batch = notf.NotificationBatch(
+         batch = ntf.NotificationBatch(
+            d = "device",
             dataset = ntf.Dataset(type=dtype, name=dId),
             notifications = notifs
          ),
          sync = sync,
          compare = compare
       )
+      print(req)
       self.__client.Publish(req)
 
    def GetDatasets(self, types=[]):

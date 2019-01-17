@@ -35,7 +35,7 @@ class Encoder(object):
       res = b""
       if isinstance(val, str):
          res += self.EncodeString(val)
-      elif isinstance(val, custom_types.Float32):
+      elif isinstance(val, codec.custom_types.Float32):
          res += msgpack.packb(val, use_single_float=True)
       elif isinstance(val, list):
          res += self.EncodeArray(val)
