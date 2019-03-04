@@ -1,17 +1,19 @@
+import os, sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 import yaml
-import encoder
-import decoder
+import codec.encoder
+import codec.decoder
 import logging
-import custom_types
+import codec.custom_types
 import numpy as np
 import msgpack
 
 def makeComplex(l):
-   res = custom_types.hashdict()
+   res = codec.custom_types.hashdict()
    for  i in range(0, len(l), 2):
       k = l[i]
       if isinstance(k, dict):
-         k = custom_types.hashdict(k)
+         k = codec.custom_types.hashdict(k)
       res[k] = l[i+1]
    return res
 
@@ -21,7 +23,7 @@ def runTest(encoder, decoder, test, valType):
    if valType == "i64":
       inp = int(test[valType])
    if valType == "f32":
-      inp = custom_types.Float32(np.float32(test[valType]))
+      inp = codec.custom_types.Float32(np.float32(test[valType]))
    if valType == "f64":
       inp = float(test[valType])
    if valType == "bytes":
@@ -48,8 +50,8 @@ def runTest(encoder, decoder, test, valType):
 with open("codec_test.yml", "r", encoding="ascii") as f:
    testDict = yaml.load(f.read())
 
-encoder = encoder.Encoder()
-decoder = decoder.Decoder()
+encoder = codec.encoder.Encoder()
+decoder = codec.decoder.Decoder()
 
 testTypes = [
    "bools",

@@ -1,37 +1,24 @@
-import logging
-import json
-import sys
+import sys, os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
-def updateRes(res, resp, nomKeys):
-   if "result" not in resp:
-      logging.error("expected to have result in json but got %s" % json.dumps(resp, indent=2))
-      sys.exit(2)
-   data = resp["result"]
-   dset = data["dataset"]["name"]
-
-   for notif in data["notifications"]:
-      ts = notif["timestamp"]
-      path = notif["path"]
-      if "updates" not in notif:
-         continue
-      for k, v in notif["updates"].items():
-         targetVal = getVal(v["value"], nomKeys)
-         res = updateDict(res, dset, path, k, nomKeys, targetVal, ts)
-   return res
-
-def getVal(nominal, nomKeys):
-   res = nominal
-   for k in nomKeys:
-      if k not in res:
-         logging.error(
-"""
-Key  %s not found in json %s
-Full nominal %s
-Nominal key path %s
-""" % (k, res, nominal, nomKeys)
-         )
-         sys.exit(2)
-      res = res[k]
+def ProcessNotifs(stream, paths=None, keys=None):
+   """
+   ProcessNotifs consume the batch coming from stream and return them
+   as a hierarchy of dataset, path, and keys. Allowing for faster access
+   of a given time serie.
+   """
+   res = {}
+   for batch in stream:
+      dname = batch["dataset"]["name"]
+      for notif in batch["notifications"]:
+         time = notif["timestamp"]
+         path = "/".join(notif["path_elements"])
+         if paths is not None and path not in paths:
+            continue
+         for key, value in notif["updates"]:
+            if key is not None and key not in keys:
+               continue
+            res = updateDict(res, dname, path, key, None, time)
    return res
 
 def updateDict(resDict, dataset, path, key, nominalKeys, val, ts):

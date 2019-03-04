@@ -1,4 +1,11 @@
+import json
+PointerType = 0
+WildcardType = 1
+
 class Float32(float):
+   pass
+
+class Wildcard(object):
    pass
 
 class hashdict(dict):
@@ -6,10 +13,6 @@ class hashdict(dict):
       return tuple(sorted(self.items()))
    def unsortKey(self):
       return tuple(self.items())
-   def __repr__(self):
-      return "{0}({1})".format(self.__class__.__name__,
-                               ", ".join("{0}={1}".format(
-                                  str(i[0]),repr(i[1])) for i in self.unsortKey()))
 
    def __hash__(self):
       return hash(self.__key())
@@ -19,3 +22,13 @@ class hashdict(dict):
 
    def __eq__(self, other):
       return self.__key() == other.__key()
+
+class Path(object):
+
+   def __init__(self, keys=[]):
+      self._keys = keys
+
+   def __repr__(self):
+      return self._keys.__str__()
+
+   # Add Path prefix match here

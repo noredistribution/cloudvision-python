@@ -41,6 +41,8 @@ class Encoder(object):
          res += self.EncodeArray(val)
       elif isinstance(val, dict):
          res += self.EncodeMap(val)
+      elif isinstance(val, codec.custom_types.Wildcard):
+         res += self.__packer.pack(msgpack.ExtType(1, b""))
       else:
          res += self.__packer.pack(val)
       return res

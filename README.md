@@ -1,3 +1,3 @@
 # AerisRequester
 
-Python WRPC library to send requests on Aeris APIserver.
+Python GRPC client implementation for Aeris.
