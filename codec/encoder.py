@@ -1,7 +1,6 @@
 import msgpack
 import io
 import codec.custom_types
-from collections import OrderedDict
 
 class Encoder(object):
 
@@ -42,7 +41,10 @@ class Encoder(object):
       elif isinstance(val, dict):
          res += self.EncodeMap(val)
       elif isinstance(val, codec.custom_types.Wildcard):
-         res += self.__packer.pack(msgpack.ExtType(1, b""))
+         res += self.__packer.pack(msgpack.ExtType(codec.custom_types.WildcardType, b""))
+      elif isinstance(val, codec.custom_types.Path):
+         keys = self.Encode(val._keys)
+         res += self.__packer.pack(msgpack.ExtType(codec.custom_types.PointerType, keys))
       else:
          res += self.__packer.pack(val)
       return res

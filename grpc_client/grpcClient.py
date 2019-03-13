@@ -136,7 +136,7 @@ class GRPCClient(object):
       CreateDataset creates a new dataset on Aeris with type dtype and ID dId
       """
       req = rtr.CreateDatasetRequest(
-         ntf.Dataset(type=dtype, name=dId)
+         dataset = ntf.Dataset(type=dtype, name=dId)
       )
       self.__client.CreateDataset(req)
 

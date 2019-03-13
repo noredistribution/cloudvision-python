@@ -5,9 +5,9 @@ import codec.encoder
 import codec.decoder
 import logging
 import codec.custom_types
-import numpy as np
 import msgpack
 
+# makeComplex creates a complex dictionnary using a list of pairs
 def makeComplex(l):
    res = codec.custom_types.hashdict()
    for  i in range(0, len(l), 2):
@@ -35,9 +35,6 @@ def runTest(encoder, decoder, test, valType):
    res = encoder.Encode(inp)
    if res != expected:
       logging.error("Bad encoding for %s. Got %s expected %s" % (test["name"], res, expected))
-      print(inp)
-      print(decoder.Decode(expected))
-      print(decoder.Decode(res))
       return
 
    rev = decoder.Decode(res)

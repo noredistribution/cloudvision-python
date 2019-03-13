@@ -1,7 +1,4 @@
-import sys, os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
-
-def ProcessNotifs(stream, paths=None, keys=None):
+def ProcessNotifs(stream, paths=None, keys=None, nominalKeys=None):
    """
    ProcessNotifs consume the batch coming from stream and return them
    as a hierarchy of dataset, path, and keys. Allowing for faster access
@@ -18,7 +15,7 @@ def ProcessNotifs(stream, paths=None, keys=None):
          for key, value in notif["updates"]:
             if key is not None and key not in keys:
                continue
-            res = updateDict(res, dname, path, key, None, time)
+            res = updateDict(res, dname, path, key, nominalKeys, time)
    return res
 
 def updateDict(resDict, dataset, path, key, nominalKeys, val, ts):

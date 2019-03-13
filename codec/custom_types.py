@@ -1,7 +1,8 @@
-import json
 PointerType = 0
 WildcardType = 1
 
+# Python doesn't differentiate between Float32 and 64
+# This allows for the proper Marshalling of Float32
 class Float32(float):
    pass
 
@@ -11,8 +12,6 @@ class Wildcard(object):
 class hashdict(dict):
    def __key(self):
       return tuple(sorted(self.items()))
-   def unsortKey(self):
-      return tuple(self.items())
 
    def __hash__(self):
       return hash(self.__key())
@@ -30,5 +29,3 @@ class Path(object):
 
    def __repr__(self):
       return self._keys.__str__()
-
-   # Add Path prefix match here
