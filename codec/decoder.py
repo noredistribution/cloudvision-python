@@ -1,13 +1,14 @@
 import msgpack
 import codec.custom_types
-
+__all__ = ["Decoder"]
 
 def pair_hook(data):
     res = {}
     for k, v in data:
         if isinstance(k, dict):
             k = codec.custom_types.hashdict(k)
-            res[k] = v
+        res[k] = v
+
     return res
 
 

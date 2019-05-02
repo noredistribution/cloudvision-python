@@ -25,6 +25,6 @@ def updateDict(resDict, dataset, path, key, nominalKeys, val, ts):
                                               {}).setdefault(key, {})
     if nominalKeys:
         entry = entry.setdefault("/".join(nominalKeys), {})
-        entry.setdefault("values", []).append(val)
-        entry.setdefault("timestamps", []).append(ts)
+    entry.setdefault("values", []).append(val)
+    entry.setdefault("timestamps", []).append(ts)
     return resDict

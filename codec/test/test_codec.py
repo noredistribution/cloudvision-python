@@ -35,12 +35,11 @@ def runTest(encoder, decoder, test, valType):
         inp = makeComplex(test[valType])
     if valType == "pointer":
         inp = msgpack.ExtType(0, encoder.Encode(test[valType]))
-        res = encoder.Encode(inp)
+    res = encoder.Encode(inp)
     if res != expected:
         logging.error("Bad encoding for %s. Got %s expected %s"
                       % (test["name"], res, expected))
         return
-
     rev = decoder.Decode(res)
     if rev != inp:
         logging.error("Bad decoding for %s. Got %s expected %s"

@@ -29,7 +29,7 @@ class Encoder(object):
             buf += self.Encode(k)
             buf += self.Encode(v)
             dictItems.append(buf)
-            res += b"".join(sorted(dictItems))
+        res += b"".join(sorted(dictItems))
         return res
 
     def Encode(self, val):
