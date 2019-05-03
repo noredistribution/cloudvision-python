@@ -16,7 +16,7 @@ def makeComplex(l):
         k = l[i]
         if isinstance(k, dict):
             k = codec.hashdict(k)
-            res[k] = l[i+1]
+        res[k] = l[i+1]
     return res
 
 
