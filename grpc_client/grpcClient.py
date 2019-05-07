@@ -18,14 +18,13 @@ def CreateQuery(pathKeys, dId, dtype="device"):
     pathKeys must be of the form [([pathElts...], [keys...])...]
     """
     encoder = codec.Encoder()
-    paths = []
-    for path, key in pathKeys:
-        if key is not None:
-            key = [encoder.Encode(k) for k in key]
-            paths.append(rtr.Path(
-                keys=key,
-                path_elements=[encoder.Encode(elt) for elt in path]
-            ))
+    paths = [
+        rtr.Path(
+            keys=key,
+            path_elements=[encoder.Encode(elt) for elt in path],
+        )
+        for path, key in pathKeys if key is not None
+    ]
     return rtr.Query(
         dataset=ntf.Dataset(type=dtype, name=dId),
         paths=paths
@@ -76,7 +75,7 @@ class GRPCClient(object):
             with open(certs, "rb") as f:
                 creds = grpc.ssl_channel_credentials(f.read())
                 channel = grpc.secure_channel(grpcAddr, creds)
-                self.__client = rtr_client.RouterV1Stub(channel)
+        self.__client = rtr_client.RouterV1Stub(channel)
 
         self.encoder = codec.Encoder()
         self.decoder = codec.Decoder()
@@ -98,7 +97,7 @@ class GRPCClient(object):
         )
         if sharding is not None:
             request.sharded_sub = sharding
-            stream = self.__client.Get(request)
+        stream = self.__client.Get(request)
         return (self.DecodeNotificationBatch(nb) for nb in stream)
 
     def Subscribe(self, querries, sharding=None):
@@ -113,7 +112,7 @@ class GRPCClient(object):
         )
         if sharding is not None:
             res.sharded_sub = sharding
-            stream = self.__client.Subscribe(req)
+        stream = self.__client.Subscribe(req)
         return (self.DecodeNotificationBatch(nb) for nb in stream)
 
     def Publish(self, dtype, dId, sync, compare, notifs):

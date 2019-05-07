@@ -2,6 +2,7 @@ import msgpack
 import codec.custom_types
 __all__ = ["Decoder"]
 
+
 def pair_hook(data):
     res = {}
     for k, v in data:

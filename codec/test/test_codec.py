@@ -24,17 +24,17 @@ def runTest(encoder, decoder, test, valType):
     expected = bytearray(test["out"])
     inp = test[valType]
     if valType == "i64":
-        inp = int(test[valType])
+        inp = int(inp)
     if valType == "f32":
-        inp = codec.custom_types.Float32(np.float32(test[valType]))
+        inp = codec.custom_types.Float32(np.float32(inp))
     if valType == "f64":
-        inp = float(test[valType])
+        inp = float(inp)
     if valType == "bytes":
-        inp = bytes(test[valType])
+        inp = bytes(inp)
     if valType == "complex":
-        inp = makeComplex(test[valType])
+        inp = makeComplex(inp)
     if valType == "pointer":
-        inp = msgpack.ExtType(0, encoder.Encode(test[valType]))
+        inp = msgpack.ExtType(0, encoder.Encode(inp))
     res = encoder.Encode(inp)
     if res != expected:
         logging.error("Bad encoding for %s. Got %s expected %s"
