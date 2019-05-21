@@ -68,13 +68,22 @@ class GRPCClient(object):
     certs, if present, must be the path to the cert file.
     """
 
-    def __init__(self, grpcAddr, certs=None):
-        if certs is None:
+    def __init__(self, grpcAddr, certs=None, key=None, ca=None):
+        if certs is None or key is None:
             channel = grpc.insecure_channel(grpcAddr)
         else:
-            with open(certs, "rb") as f:
-                creds = grpc.ssl_channel_credentials(f.read())
-                channel = grpc.secure_channel(grpcAddr, creds)
+            certData, keyData, caData = None, None, None
+            with open(certs, 'rb') as f:
+                certData = f.read()
+            with open(key, 'rb') as f:
+                keyData = f.read()
+            if ca:
+                with open(ca, 'rb') as f:
+                    caData = f.read()
+            creds = grpc.ssl_channel_credentials(certificate_chain=certData,
+                                                 private_key=keyData,
+                                                 root_certificates=caData)
+            channel = grpc.secure_channel(grpcAddr, creds)
         self.__client = rtr_client.RouterV1Stub(channel)
 
         self.encoder = codec.Encoder()
