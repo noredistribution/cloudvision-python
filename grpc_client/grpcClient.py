@@ -20,10 +20,10 @@ def CreateQuery(pathKeys, dId, dtype="device"):
     encoder = codec.Encoder()
     paths = [
         rtr.Path(
-            keys=key,
+            keys=[encoder.Encode(k) for k in keys],
             path_elements=[encoder.Encode(elt) for elt in path],
         )
-        for path, key in pathKeys if key is not None
+        for path, keys in pathKeys if keys is not None
     ]
     return rtr.Query(
         dataset=ntf.Dataset(type=dtype, name=dId),

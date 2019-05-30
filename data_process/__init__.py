@@ -13,9 +13,9 @@ def ProcessNotifs(stream, paths=None, keys=None, nominalKeys=None):
             if paths is not None and path not in paths:
                 continue
             for key, value in notif["updates"]:
-                if key is not None and key not in keys:
+                if keys is not None and key not in keys:
                     continue
-                res = updateDict(res, dname, path, key, nominalKeys, time)
+                res = updateDict(res, dname, path, key, nominalKeys, value, time)
     return res
 
 
@@ -27,4 +27,21 @@ def updateDict(resDict, dataset, path, key, nominalKeys, val, ts):
         entry = entry.setdefault("/".join(nominalKeys), {})
     entry.setdefault("values", []).append(val)
     entry.setdefault("timestamps", []).append(ts)
+    return resDict
+
+def SortDict(resDict):
+    """
+    SortDict orders every timeseries in a hierarchy of dataset by its timestamps.
+    """
+    for _, dset in resDict.items():
+        for _, path in dset.items():
+            for _, k in path.items():
+                # grpc.Timestamp cannot be compared, hence the hack.
+                timestamps = [(ts.seconds, ts.nanos) for ts in k["timestamps"]]
+                _, _, k["values"], k["timestamps"] = zip(*sorted(zip(
+                    timestamps,
+                    # In case we have the same timestamp, keep ordering
+                    range(len(timestamps)),
+                    k["values"],
+                    k["timestamps"])))
     return resDict
