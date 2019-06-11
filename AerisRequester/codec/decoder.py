@@ -1,5 +1,5 @@
 import msgpack
-import codec.custom_types
+from .custom_types import Wildcard, WildcardType, hashdict, PointerType, Path
 __all__ = ["Decoder"]
 
 
@@ -7,7 +7,7 @@ def pair_hook(data):
     res = {}
     for k, v in data:
         if isinstance(k, dict):
-            k = codec.custom_types.hashdict(k)
+            k = hashdict(k)
         res[k] = v
 
     return res
@@ -15,11 +15,11 @@ def pair_hook(data):
 
 def ext_hook(code, data):
     decoder = Decoder()
-    if code == codec.custom_types.PointerType:
+    if code == PointerType:
         keys = decoder.Decode(data)
-        return codec.custom_types.Path(keys=keys)
-    elif code == codec.custom_types.WildcardType:
-        return codec.custom_types.Wildcard()
+        return Path(keys=keys)
+    elif code == WildcardType:
+        return Wildcard()
     return msgpack.ExtType(code, data)
 
 
@@ -37,7 +37,7 @@ class Decoder(object):
         return res
 
     def DecodeMap(self, m):
-        res = codec.custom_types.hashdict()
+        res = hashdict()
         for k, v in m.items():
             res[self.__postProcess(k)] = self.__postProcess(v)
         return res

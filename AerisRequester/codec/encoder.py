@@ -1,7 +1,7 @@
 import msgpack
 import io
-import codec.custom_types
-
+from AerisRequester.codec.custom_types import Float32, PointerType, WildcardType
+from AerisRequester.codec.custom_types import Wildcard, Path
 
 class Encoder(object):
 
@@ -36,19 +36,21 @@ class Encoder(object):
         res = b""
         if isinstance(val, str):
             res += self.EncodeString(val)
-        elif isinstance(val, codec.custom_types.Float32):
+        elif isinstance(val, Float32):
             res += msgpack.packb(val, use_single_float=True)
         elif isinstance(val, list):
             res += self.EncodeArray(val)
         elif isinstance(val, dict):
             res += self.EncodeMap(val)
-        elif isinstance(val, codec.custom_types.Wildcard):
+        elif isinstance(val, Wildcard):
+            print("Got there", val)
             res += self.__packer.pack(msgpack.ExtType(
-                codec.custom_types.WildcardType, b""))
-        elif isinstance(val, codec.custom_types.Path):
+                WildcardType, b""))
+        elif isinstance(val, Path):
             keys = self.Encode(val._keys)
             res += self.__packer.pack(msgpack.ExtType(
-                codec.custom_types.PointerType, keys))
+                PointerType, keys))
         else:
+            print("Got there wrongly", val, isinstance(val, Wildcard), Wildcard())
             res += self.__packer.pack(val)
         return res

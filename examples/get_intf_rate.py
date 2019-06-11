@@ -1,14 +1,12 @@
 import sys
 import os
 import json
-sys.path.insert(0, os.path.abspath(os.path.join(
-    os.path.dirname(__file__), '../')))
-import grpc_client
-import codec
+import AerisRequester.grpc_client as grpc_client
+from AerisRequester.codec.custom_types import Path
 
 
 def default(obj):
-    if isinstance(obj, codec.Path):
+    if isinstance(obj, Path):
         return obj._keys
 
 
@@ -29,8 +27,7 @@ def main(apiserverAddr, dId, intfId):
     s = client.Subscribe(query)
     for a in s:
         for notif in a["notifications"]:
-            for upd in notif["updates"]:
-                print(json.dumps(upd, default=default, indent=2))
+                print(json.dumps(notif["updates"], default=default, indent=2))
     return 0
 
 

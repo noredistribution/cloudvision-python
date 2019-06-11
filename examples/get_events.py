@@ -3,14 +3,12 @@ import os
 import datetime
 from google.protobuf.timestamp_pb2 import Timestamp
 import json
-sys.path.insert(0, os.path.abspath(os.path.join(
-    os.path.dirname(__file__), '../')))
-import grpc_client
-import codec
+import AerisRequester.grpc_client as grpc_client
+from AerisRequester.codec.custom_types import hashdict, Path
 
 
 def default(obj):
-    if isinstance(obj, codec.custom_types.Path):
+    if isinstance(obj, Path):
         return obj._keys
 
 
@@ -30,8 +28,7 @@ def main(apiserverAddr, days=0, hours=1, minutes=0):
     s = client.Get(query, start=start)
     for a in s:
         for notif in a["notifications"]:
-            for upd in notif["updates"]:
-                print(json.dumps(upd, default=default, indent=2))
+            print(json.dumps(notif["updates"], default=default, indent=4, sort_keys=True, separators=(',', ': ')))
     return 0
 
 

@@ -51,14 +51,14 @@ def CreateNotification(ts, paths, deletes=None, updates=None, retracts=None):
         ]
     if retracts is not None:
         ret = [encoder.Encoder(r) for r in retracts]
-        pathElts = [encoder.Encode(elt) for elt in paths]
-        return ntf.Notification(
-            timestamp=ts,
-            deletes=dels,
-            updates=upd,
-            retracts=ret,
-            path_elements=pathElts
-        )
+    pathElts = [encoder.Encode(elt) for elt in paths]
+    return ntf.Notification(
+        timestamp=ts,
+        deletes=dels,
+        updates=upd,
+        retracts=ret,
+        path_elements=pathElts
+    )
 
 
 class GRPCClient(object):
@@ -175,10 +175,10 @@ class GRPCClient(object):
         res = {
             "timestamp": notif.timestamp,
             "deletes": [self.decoder.Decode(d) for d in notif.deletes],
-            "updates": [
-                (self.decoder.Decode(u.key), self.decoder.Decode(u.value))
+            "updates": {
+                self.decoder.Decode(u.key): self.decoder.Decode(u.value)
                 for u in notif.updates
-            ],
+            },
             "retracts": [self.decoder.Decode(r) for r in notif.retracts],
             "path_elements": [
                 self.decoder.Decode(elt) for elt in notif.path_elements
