@@ -14,14 +14,10 @@ targetDataset = "analytics"
 path = ["DatasetInfo", "Devices"]
 # No filtering done on keys, accept all
 keys = []
-client = grpc_client.GRPCClient("http://MyApiserver:9093")
-ProtoBufQuery = grpc_client.CreateQuery([(path, keys)], targetDataset)
-notifBatchStream = client.Get([query])
-
-for notifBatch in notifBatchStream:
-   for notif in notifBatch["notifications"]:
-      # Get timestamp for all update here with notif.Timestamp
-      for update in notif["updates"]:
-         print(update)
-
+ProtoBufQuery = CreateQuery([(path, keys)], targetDataset)
+with GRPCClient("http://MyApiserver:9093") as client:
+     for notifBatch in client.Get([query]):
+         for notif in notifBatch["notifications"]:
+             # Get timestamp for all update here with notif.Timestamp
+             PrettyPrint(notif["updates"])
 ```
