@@ -1,29 +1,22 @@
 import sys
-import os
-import json
-import AerisRequester.grpc_client as grpc_client
+from AerisRequester.grpc_client import GRPCClient, CreateQuery
 from AerisRequester.codec.custom_types import Path
-
-
-def default(obj):
-    if isinstance(obj, Path):
-        return obj._keys
+from utils import PrettyPrint
 
 
 def main(apiserverAddr):
-    client = grpc_client.GRPCClient(apiserverAddr)
     pathElts = [
         "DatasetInfo",
         "Devices"
     ]
     query = [
-        grpc_client.CreateQuery([(pathElts, [])], "analytics")
+        CreateQuery([(pathElts, [])], "analytics")
     ]
-    notifBatches = client.Get(query)
 
-    for batch in notifBatches:
-        for notif in batch["notifications"]:
-            print(json.dumps(notif["updates"], indent=2))
+    with GRPCClient(apiserverAddr) as client:
+        for batch in client.Get(query):
+            for notif in batch["notifications"]:
+                PrettyPrint(notif["updates"])
     return 0
 
 

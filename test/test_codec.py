@@ -5,18 +5,18 @@ import yaml
 import logging
 import msgpack
 from AerisRequester.codec import Encoder, Decoder
-from AerisRequester.codec.custom_types import hashdict, Float32
+from AerisRequester.codec.custom_types import frozendict, Float32
 
 
 # makeComplex creates a complex dictionary using a list of pairs
 def makeComplex(l):
-    res = hashdict()
+    res = {}
     for i in range(0, len(l), 2):
         k = l[i]
         if isinstance(k, dict):
-            k = hashdict(k)
+            k = frozendict(k)
         res[k] = l[i+1]
-    return res
+    return frozendict(res)
 
 
 def runTest(encoder, decoder, test, valType):

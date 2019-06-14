@@ -1,19 +1,12 @@
 import sys
-import os
 import datetime
 from google.protobuf.timestamp_pb2 import Timestamp
-import json
-import AerisRequester.grpc_client as grpc_client
-from AerisRequester.codec.custom_types import hashdict, Path
-
-
-def default(obj):
-    if isinstance(obj, Path):
-        return obj._keys
+from AerisRequester.grpc_client import GRPCClient, CreateQuery
+from AerisRequester.codec import frozendict, Path
+from utils import PrettyPrint
 
 
 def main(apiserverAddr, days=0, hours=1, minutes=0):
-    client = grpc_client.GRPCClient(apiserverAddr)
     startDtime = datetime.datetime.now() - datetime.timedelta(days=days,
                                                               hours=hours,
                                                               minutes=minutes)
@@ -23,12 +16,13 @@ def main(apiserverAddr, days=0, hours=1, minutes=0):
         "activeEvents"
     ]
     query = [
-        grpc_client.CreateQuery([(pathElts, [])], "analytics")
+        CreateQuery([(pathElts, [])], "analytics")
     ]
-    s = client.Get(query, start=start)
-    for a in s:
-        for notif in a["notifications"]:
-            print(json.dumps(notif["updates"], default=default, indent=4, sort_keys=True, separators=(',', ': ')))
+
+    with GRPCClient(apiserverAddr) as client:
+        for batch in client.Get(query, start=start):
+            for notif in batch["notifications"]:
+                PrettyPrint(notif["updates"])
     return 0
 
 

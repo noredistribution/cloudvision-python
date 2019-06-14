@@ -1,14 +1,10 @@
 import os
 import sys
 import grpc
-sys.path.insert(0, os.path.abspath(os.path.join(
-    os.path.dirname(__file__), '../')))
-sys.path.insert(0, os.path.abspath(os.path.join(
-    os.path.dirname(__file__), '../gen/')))
-import router_pb2 as rtr
-import router_pb2_grpc as rtr_client
-import notification_pb2 as ntf
-import codec
+import AerisRequester.gen.router_pb2 as rtr
+import AerisRequester.gen.router_pb2_grpc as rtr_client
+import AerisRequester.gen.notification_pb2 as ntf
+import AerisRequester.codec as codec
 
 
 def CreateQuery(pathKeys, dId, dtype="device"):
@@ -70,7 +66,7 @@ class GRPCClient(object):
 
     def __init__(self, grpcAddr, certs=None, key=None, ca=None):
         if certs is None or key is None:
-            channel = grpc.insecure_channel(grpcAddr)
+            self.channel = grpc.insecure_channel(grpcAddr)
         else:
             certData, keyData, caData = None, None, None
             with open(certs, 'rb') as f:
@@ -83,11 +79,21 @@ class GRPCClient(object):
             creds = grpc.ssl_channel_credentials(certificate_chain=certData,
                                                  private_key=keyData,
                                                  root_certificates=caData)
-            channel = grpc.secure_channel(grpcAddr, creds)
-        self.__client = rtr_client.RouterV1Stub(channel)
+            self.channel = grpc.secure_channel(grpcAddr, creds)
+        self.__client = rtr_client.RouterV1Stub(self.channel)
 
         self.encoder = codec.Encoder()
         self.decoder = codec.Decoder()
+
+    # Make GRPCClient usable with `with` statement
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        return self.channel.__exit__(type, value, traceback)
+
+    def close(self):
+        self.channel.close()
 
     def Get(self, querries, start=None, end=None,
             versions=None, sharding=None):
@@ -97,7 +103,7 @@ class GRPCClient(object):
         querries must be a list of querry protobuf messages.
         start and end, if present, must be nanoseconds timestamps (uint64).
         sharding, if present must be a protobuf sharding message.
-        """
+         """
         request = rtr.GetRequest(
             query=querries,
             start=start,
@@ -152,9 +158,6 @@ class GRPCClient(object):
         return stream
 
     def CreateDataset(self, dtype, dId):
-        """
-        CreateDataset creates a new dataset on Aeris with type dtype and ID dId
-        """
         req = rtr.CreateDatasetRequest(
             dataset=ntf.Dataset(type=dtype, name=dId)
         )

@@ -1,7 +1,7 @@
 import msgpack
 import io
-from AerisRequester.codec.custom_types import Float32, PointerType, WildcardType
-from AerisRequester.codec.custom_types import Wildcard, Path
+from AerisRequester.codec import Float32, PointerType, WildcardType
+from AerisRequester.codec import Wildcard, Path, frozendict
 
 class Encoder(object):
 
@@ -16,8 +16,7 @@ class Encoder(object):
     def EncodeArray(self, a):
         res = b""
         res += self.__packer.pack_array_header(len(a))
-        for val in a:
-            res += self.Encode(val)
+        res += b"".join(self.Encode(val) for val in a)
         return res
 
     def EncodeMap(self, m):
@@ -25,9 +24,7 @@ class Encoder(object):
         res += self.__packer.pack_map_header(len(m))
         dictItems = []
         for k, v in m.items():
-            buf = b""
-            buf += self.Encode(k)
-            buf += self.Encode(v)
+            buf = b"".join((self.Encode(k), self.Encode(v)))
             dictItems.append(buf)
         res += b"".join(sorted(dictItems))
         return res
@@ -35,22 +32,20 @@ class Encoder(object):
     def Encode(self, val):
         res = b""
         if isinstance(val, str):
-            res += self.EncodeString(val)
+            res = self.EncodeString(val)
         elif isinstance(val, Float32):
-            res += msgpack.packb(val, use_single_float=True)
+            res = msgpack.packb(val, use_single_float=True)
         elif isinstance(val, list):
-            res += self.EncodeArray(val)
-        elif isinstance(val, dict):
-            res += self.EncodeMap(val)
+            res = self.EncodeArray(val)
+        elif isinstance(val, (dict, frozendict)):
+            res = self.EncodeMap(val)
         elif isinstance(val, Wildcard):
-            print("Got there", val)
-            res += self.__packer.pack(msgpack.ExtType(
+            res = self.__packer.pack(msgpack.ExtType(
                 WildcardType, b""))
         elif isinstance(val, Path):
             keys = self.Encode(val._keys)
-            res += self.__packer.pack(msgpack.ExtType(
+            res = self.__packer.pack(msgpack.ExtType(
                 PointerType, keys))
         else:
-            print("Got there wrongly", val, isinstance(val, Wildcard), Wildcard())
-            res += self.__packer.pack(val)
+            res = self.__packer.pack(val)
         return res
