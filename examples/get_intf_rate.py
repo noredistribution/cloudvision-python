@@ -29,4 +29,4 @@ if __name__ == "__main__":
     if len(sys.argv) < 4:
         print("usage: ", sys.argv[0], "<apiserverAddress> <deviceID> <intfID>")
         exit(2)
-    exit(main(sys.argv[1], sys.argv[2], sys.argv[3]))
+    exit(main(*sys.argv[1:]))

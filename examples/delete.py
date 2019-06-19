@@ -24,4 +24,4 @@ if __name__ == "__main__":
         print("usage: ", sys.argv[0], "<apiserverAddress>" +
               " <deviceID> <path> <key>")
         exit(2)
-    exit(main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]))
+    exit(main(*sys.argv[1:]))

@@ -26,4 +26,4 @@ if __name__ == "__main__":
               "<deviceID> <path> <key> <value>")
         exit(2)
     # Edit time range for events here
-    exit(main(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5]))
+    exit(main(*sys.argv[1:]))

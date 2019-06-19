@@ -4,8 +4,7 @@ import numpy as np
 import yaml
 import logging
 import msgpack
-from AerisRequester.codec import Encoder, Decoder
-from AerisRequester.codec.custom_types import frozendict, Float32
+from AerisRequester.codec import Encoder, Decoder, frozendict, Float32
 
 
 # makeComplex creates a complex dictionary using a list of pairs
@@ -19,21 +18,8 @@ def makeComplex(l):
     return frozendict(res)
 
 
-def runTest(encoder, decoder, test, valType):
+def runTest(encoder, decoder, test, inp):
     expected = bytearray(test["out"])
-    inp = test[valType]
-    if valType == "i64":
-        inp = int(inp)
-    if valType == "f32":
-        inp = Float32(np.float32(inp))
-    if valType == "f64":
-        inp = float(inp)
-    if valType == "bytes":
-        inp = bytes(inp)
-    if valType == "complex":
-        inp = makeComplex(inp)
-    if valType == "pointer":
-        inp = msgpack.ExtType(0, encoder.Encode(inp))
     res = encoder.Encode(inp)
     if res != expected:
         logging.error("Bad encoding for %s. Got %s expected %s"
@@ -54,23 +40,26 @@ with open("test_codec.yml", "r") as f:
 encoder = Encoder()
 decoder = Decoder()
 
-testTypes = [
-    "bools",
-    "i8",
-    "i16",
-    "i32",
-    "i64",
-    "f32",
-    "f64",
-    "str",
-    "bytes",
-    "array",
-    "map",
-    "complex",
-    "pointer"
-]
+identity = lambda x: x
+preprocessing = {
+    "bool": identity,
+    "i8": identity,
+    "i16": identity,
+    "i32": identity,
+    "i64": int,
+    "f32": lambda x: Float32(np.float32(x)),
+    "f64": float,
+    "str": identity,
+    "bytes": bytes,
+    "array": identity,
+    "map": lambda x: frozendict(x),
+    "complex": makeComplex,
+    "pointer": lambda x: msgpack.ExtType(0, encoder.Encode(x)),
+    "nil": lambda x: None
+}
 
 for t in testDict["tests"]:
-    for typ in testTypes:
-        if typ in t:
-            runTest(encoder, decoder, t, typ)
+    testType, testVal = next(((key, val) for key, val in t.items()
+                              if key != 'name' and key != 'out'))
+    testVal = preprocessing[testType](testVal)
+    runTest(encoder, decoder, t, testVal)

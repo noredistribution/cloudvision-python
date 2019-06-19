@@ -58,6 +58,7 @@ class frozendict(Mapping):
     def __eq__(self, other):
         return tuple(sorted(self._dict.items())) == tuple(sorted(other._dict.items()))
 
+
 class Path(object):
 
     def __init__(self, keys=[]):

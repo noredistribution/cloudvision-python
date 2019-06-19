@@ -27,7 +27,7 @@ def CreateQuery(pathKeys, dId, dtype="device"):
     )
 
 
-def CreateNotification(ts, paths, deletes=None, updates=None, retracts=None):
+def CreateNotification(ts, paths, deletes=[], updates=[], retracts=[]):
     """
     CreateNotification creates a notification protobuf message.
     ts must be of the type google.protobuf.timestamp_pb2.Timestamp
@@ -36,17 +36,13 @@ def CreateNotification(ts, paths, deletes=None, updates=None, retracts=None):
     updates, if present, must be of the form [(key, value)...]
     """
     encoder = codec.Encoder()
-    dels = upd = ret = None
-    if deletes is not None:
-        dels = [encoder.Encode(d) for d in deletes]
-    if updates is not None:
-        upd = [
-            ntf.Notification.Update(
-                key=encoder.Encode(k),
-                value=encoder.Encode(v)) for k, v in updates
-        ]
-    if retracts is not None:
-        ret = [encoder.Encoder(r) for r in retracts]
+    dels = [encoder.Encode(d) for d in deletes]
+    upd = [
+        ntf.Notification.Update(
+            key=encoder.Encode(k),
+            value=encoder.Encode(v)) for k, v in updates
+    ]
+    ret = [encoder.Encoder(r) for r in retracts]
     pathElts = [encoder.Encode(elt) for elt in paths]
     return ntf.Notification(
         timestamp=ts,
@@ -68,7 +64,7 @@ class GRPCClient(object):
         if certs is None or key is None:
             self.channel = grpc.insecure_channel(grpcAddr)
         else:
-            certData, keyData, caData = None, None, None
+            caData = None
             with open(certs, 'rb') as f:
                 certData = f.read()
             with open(key, 'rb') as f:

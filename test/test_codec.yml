@@ -14,6 +14,7 @@ tests:
     bool: false
     out: [194]
   - name: nil
+    nil: none
     out: [192]
   - name: zero int8
     i8: 0

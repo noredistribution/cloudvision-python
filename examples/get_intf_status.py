@@ -31,4 +31,4 @@ if __name__ == "__main__":
     if len(sys.argv) < 3:
         print("usage: ", sys.argv[0], "<apiserverAddress> <datasetID>")
         exit(2)
-    exit(main(sys.argv[1], sys.argv[2]))
+    exit(main(*sys.argv[1:]))

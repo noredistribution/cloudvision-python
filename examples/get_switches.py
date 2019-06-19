@@ -1,6 +1,6 @@
 import sys
 from AerisRequester.grpc_client import GRPCClient, CreateQuery
-from AerisRequester.codec.custom_types import Path
+from AerisRequester.codec import Path
 from utils import PrettyPrint
 
 
