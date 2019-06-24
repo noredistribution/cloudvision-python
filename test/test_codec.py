@@ -6,15 +6,15 @@ import logging
 import msgpack
 from AerisRequester.codec import Encoder, Decoder, frozendict, Float32
 
-
+def grouped(it, n):
+    return zip(*[iter(it)]*n)
 # makeComplex creates a complex dictionary using a list of pairs
 def makeComplex(l):
     res = {}
-    for i in range(0, len(l), 2):
-        k = l[i]
+    for k, v in grouped(l, 2):
         if isinstance(k, dict):
             k = frozendict(k)
-        res[k] = l[i+1]
+        res[k] = v
     return frozendict(res)
 
 
