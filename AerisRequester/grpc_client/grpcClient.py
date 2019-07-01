@@ -27,7 +27,7 @@ def CreateQuery(pathKeys, dId, dtype="device"):
     )
 
 
-def CreateNotification(ts, paths, deletes=[], updates=[], retracts=[]):
+def CreateNotification(ts, paths, deletes=None, updates=[], retracts=[]):
     """
     CreateNotification creates a notification protobuf message.
     ts must be of the type google.protobuf.timestamp_pb2.Timestamp
@@ -36,7 +36,9 @@ def CreateNotification(ts, paths, deletes=[], updates=[], retracts=[]):
     updates, if present, must be of the form [(key, value)...]
     """
     encoder = codec.Encoder()
-    dels = [encoder.Encode(d) for d in deletes]
+    # An empty list would mean deleteAll
+    if deletes is not None:
+        dels = [encoder.Encode(d) for d in deletes]
     upd = [
         ntf.Notification.Update(
             key=encoder.Encode(k),
