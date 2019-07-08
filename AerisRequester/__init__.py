@@ -21,7 +21,7 @@ def ProcessNotifs(stream, paths={}, keys={}, nominalKeys=None):
                 if keys and key not in keys:
                     continue
                 value = getVal(value, nominalKeys)
-                res = updateDict(res, dname, path, key, nominalKeys, value, time)
+                res = _updateDict(res, dname, path, key, nominalKeys, value, time)
     return res
 
 def getVal(nominal, nomKeys):
@@ -40,7 +40,7 @@ Nominal key path %s
         res = res[k]
     return res
 
-def updateDict(resDict, dataset, path, key, nominalKeys, val, ts):
+def _updateDict(resDict, dataset, path, key, nominalKeys, val, ts):
     entry = resDict.setdefault(dataset,
                                {}).setdefault(path,
                                               {}).setdefault(key, {})

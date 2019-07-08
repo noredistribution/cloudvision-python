@@ -1,13 +1,13 @@
 # AerisRequester
 
 AerisRequester is a Python implementation of a GRPC client for Aeris. It takes care
-of Getting and publishing data and datasets, and also provides utilities for data
+of getting and publishing data and datasets, and also provides utilities for data
 representation similar to the ones found in Aeris Query Language.
 
 ## Getting started
 
 This is a small example advertising a few of the GRPC client capabilities.
-This example print info from all devices streaming on Aeris.
+This example prints info from all devices streaming into Aeris.
 
 ```
 targetDataset = "analytics"
