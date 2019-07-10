@@ -4,6 +4,8 @@ stages:
 test:
   stage: test
   script:
+    - apt-get update -qy
+    - apt-get install python3
     - sh install.sh
     - pip install -r requirements.txt
     - python test/test_codec.py
