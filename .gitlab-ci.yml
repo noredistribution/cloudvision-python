@@ -10,3 +10,6 @@ test:
     - pip install -r requirements.txt
     - cd test
     - python test_codec.py
+    - cd ../examples
+    - python get_events.py "apiserver-noauth-grpc.staging.corp.arista.io:6666"
+    - python get_switches.py "apiserver-noauth-grpc.staging.corp.arista.io:6666"
