@@ -13,7 +13,7 @@ class Wildcard(object):
     pass
 
 
-class frozendict(Mapping):
+class FrozenDict(Mapping):
     """
     An immutable wrapper around dictionaries that implements the complete :py:class:`collections.Mapping`
     interface. It can be used as a drop-in replacement for dictionaries where immutability is desired.

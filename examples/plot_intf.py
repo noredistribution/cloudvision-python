@@ -1,8 +1,8 @@
 import sys
 from google.protobuf.timestamp_pb2 import Timestamp
 import datetime
-from AerisRequester.grpc_client import GRPCClient, CreateQuery
-from AerisRequester import ProcessNotifs, SortDict
+from AerisRequester.grpc_client import GRPCClient, create_query
+from AerisRequester import process_notifs, sort_dict
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
 
@@ -18,14 +18,14 @@ def main(apiserverAddr, dId, intfId, versions):
         "rates",
     ]
     query = [
-        CreateQuery([(pathElts, ["outOctets"])], "analytics")
+        create_query([(pathElts, ["outOctets"])], "analytics")
     ]
 
     with GRPCClient(apiserverAddr) as client:
-        stream = client.Get(query, versions=versions)
-        dataDict = ProcessNotifs(stream)
+        stream = client.get(query, versions=versions)
+        dataDict = process_notifs(stream)
         # Order by timestamps
-        dataDict = SortDict(dataDict)
+        dataDict = sort_dict(dataDict)
 
         # Formatting dates
         vals = dataDict["analytics"]["/".join(pathElts)]["outOctets"]["values"]

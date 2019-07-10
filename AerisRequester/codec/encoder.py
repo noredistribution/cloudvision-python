@@ -1,7 +1,7 @@
 import msgpack
 import io
 from AerisRequester.codec import Float32, PointerType, WildcardType
-from AerisRequester.codec import Wildcard, Path, frozendict
+from AerisRequester.codec import Wildcard, Path, FrozenDict
 
 class Encoder(object):
 
@@ -10,40 +10,40 @@ class Encoder(object):
                                        use_single_float=False)
         self.__buffer = io.BytesIO()
 
-    def EncodeString(self, s):
+    def encode_string(self, s):
         return self.__packer.pack(bytearray(s, "ascii"))
 
-    def EncodeArray(self, a):
+    def encode_array(self, a):
         res = b""
         res += self.__packer.pack_array_header(len(a))
-        res += b"".join(self.Encode(val) for val in a)
+        res += b"".join(self.encode(val) for val in a)
         return res
 
-    def EncodeMap(self, m):
+    def encode_map(self, m):
         res = b""
         res += self.__packer.pack_map_header(len(m))
         dictItems = []
         for k, v in m.items():
-            buf = b"".join((self.Encode(k), self.Encode(v)))
+            buf = b"".join((self.encode(k), self.encode(v)))
             dictItems.append(buf)
         res += b"".join(sorted(dictItems))
         return res
 
-    def Encode(self, val):
+    def encode(self, val):
         res = b""
         if isinstance(val, str):
-            res = self.EncodeString(val)
+            res = self.encode_string(val)
         elif isinstance(val, Float32):
             res = msgpack.packb(val, use_single_float=True)
         elif isinstance(val, list):
-            res = self.EncodeArray(val)
-        elif isinstance(val, (dict, frozendict)):
-            res = self.EncodeMap(val)
+            res = self.encode_array(val)
+        elif isinstance(val, (dict, FrozenDict)):
+            res = self.encode_map(val)
         elif isinstance(val, Wildcard):
             res = self.__packer.pack(msgpack.ExtType(
                 WildcardType, b""))
         elif isinstance(val, Path):
-            keys = self.Encode(val._keys)
+            keys = self.encode(val._keys)
             res = self.__packer.pack(msgpack.ExtType(
                 PointerType, keys))
         else:

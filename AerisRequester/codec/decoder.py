@@ -1,11 +1,11 @@
 import msgpack
-from .custom_types import Wildcard, WildcardType, frozendict, PointerType, Path
+from .custom_types import Wildcard, WildcardType, FrozenDict, PointerType, Path
 __all__ = ["Decoder"]
 
 
 def pair_hook(data):
-    res = frozendict({
-        frozendict(k) if isinstance(k, dict) else k: v
+    res = FrozenDict({
+        FrozenDict(k) if isinstance(k, dict) else k: v
         for k, v in data
     })
     return res
@@ -14,7 +14,7 @@ def pair_hook(data):
 def ext_hook(code, data):
     decoder = Decoder()
     if code == PointerType:
-        return Path(keys=decoder.Decode(data))
+        return Path(keys=decoder.decode(data))
     elif code == WildcardType:
         return Wildcard()
     return msgpack.ExtType(code, data)
@@ -27,11 +27,11 @@ class Decoder(object):
                                            object_pairs_hook=pair_hook,
                                            ext_hook=ext_hook)
 
-    def DecodeArray(self, l):
+    def decode_array(self, l):
         return [self.__postProcess(v) for v in l]
 
-    def DecodeMap(self, m):
-        return frozendict({
+    def decode_map(self, m):
+        return FrozenDict({
             self.__postProcess(k): self.__postProcess(v)
             for k, v in m.items()
         })
@@ -40,13 +40,13 @@ class Decoder(object):
         if isinstance(b, bytes):
             return b.decode("ascii")
         elif isinstance(b, list):
-            return self.DecodeArray(b)
-        elif isinstance(b, (dict, frozendict)):
-            return self.DecodeMap(b)
+            return self.decode_array(b)
+        elif isinstance(b, (dict, FrozenDict)):
+            return self.decode_map(b)
         else:
             return b
 
-    def Decode(self, buf):
+    def decode(self, buf):
         self.__unpacker.feed(buf)
         res = self.__unpacker.unpack()
         return self.__postProcess(res)

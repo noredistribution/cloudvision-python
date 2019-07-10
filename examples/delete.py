@@ -1,6 +1,6 @@
 import sys
 from google.protobuf.timestamp_pb2 import Timestamp
-from AerisRequester.grpc_client import GRPCClient, CreateNotification
+from AerisRequester.grpc_client import GRPCClient, create_notification
 
 
 def main(apiserverAddr, dId, path, key):
@@ -13,9 +13,9 @@ def main(apiserverAddr, dId, path, key):
     compare = None
 
     pathElts = path.split("/")
-    notifs = [CreateNotification(ts, pathElts, deletes=[key])]
+    notifs = [create_notification(ts, pathElts, deletes=[key])]
     with GRPCClient(apiserverAddr) as client:
-        s = client.Publish(dtype, dId, sync, compare, notifs)
+        s = client.publish(dtype, dId, sync, compare, notifs)
     return 0
 
 

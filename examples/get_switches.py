@@ -1,7 +1,6 @@
 import sys
-from AerisRequester.grpc_client import GRPCClient, CreateQuery
-from AerisRequester.codec import Path
-from utils import PrettyPrint
+from AerisRequester.grpc_client import GRPCClient, create_query
+from utils import pretty_print
 
 
 def main(apiserverAddr):
@@ -10,13 +9,13 @@ def main(apiserverAddr):
         "Devices"
     ]
     query = [
-        CreateQuery([(pathElts, [])], "analytics")
+        create_query([(pathElts, [])], "analytics")
     ]
 
     with GRPCClient(apiserverAddr) as client:
-        for batch in client.Get(query):
+        for batch in client.get(query):
             for notif in batch["notifications"]:
-                PrettyPrint(notif["updates"])
+                pretty_print(notif["updates"])
     return 0
 
 

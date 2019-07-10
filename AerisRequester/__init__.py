@@ -3,9 +3,9 @@ from collections import deque
 name="AerisRequester"
 
 
-def ProcessNotifs(stream, paths={}, keys={}, nominalKeys=None):
+def process_notifs(stream, paths={}, keys={}, nominalKeys=None):
     """
-    ProcessNotifs consume the batch coming from stream and return them
+    process_notifs consume the batch coming from stream and return them
     as a hierarchy of dataset, path, and keys. Allowing for faster access
     of a given time serie.
     """
@@ -20,11 +20,11 @@ def ProcessNotifs(stream, paths={}, keys={}, nominalKeys=None):
             for key, value in notif["updates"].items():
                 if keys and key not in keys:
                     continue
-                value = getVal(value, nominalKeys)
-                res = _updateDict(res, dname, path, key, nominalKeys, value, time)
+                value = __get_val(value, nominalKeys)
+                res = __update_dict(res, dname, path, key, nominalKeys, value, time)
     return res
 
-def getVal(nominal, nomKeys):
+def __get_val(nominal, nomKeys):
     res = nominal
     if nomKeys is None:
         return res
@@ -40,7 +40,7 @@ Nominal key path %s
         res = res[k]
     return res
 
-def _updateDict(resDict, dataset, path, key, nominalKeys, val, ts):
+def __update_dict(resDict, dataset, path, key, nominalKeys, val, ts):
     entry = resDict.setdefault(dataset,
                                {}).setdefault(path,
                                               {}).setdefault(key, {})
@@ -50,21 +50,21 @@ def _updateDict(resDict, dataset, path, key, nominalKeys, val, ts):
     entry.setdefault("timestamps", []).append(ts)
     return resDict
 
-def SortDict(resDict):
+def sort_dict(resDict):
     """
-    SortDict orders every timeseries in a hierarchy of dataset by its timestamps.
+    sort_dict orders every timeseries in a hierarchy of dataset by its timestamps.
     """
 
-    def sortTimeSerie(timeSerie):
-        timeSerie["values"], timeSerie["timestamps"] = zip(*sorted(zip(
-            timeSerie["values"],
-            timeSerie["timestamps"]), key=lambda x: (x[1].seconds, x[1].nanos)))
+    def sort_timeserie(timeserie):
+        timeserie["values"], timeserie["timestamps"] = zip(*sorted(zip(
+            timeserie["values"],
+            timeserie["timestamps"]), key=lambda x: (x[1].seconds, x[1].nanos)))
 
     stack = [resDict]
     while stack:
-        timeSerie = stack.pop()
-        if "values" in timeSerie and "timestamps" in timeSerie:
-            sortTimeSerie(timeSerie)
+        timeserie = stack.pop()
+        if "values" in timeserie and "timestamps" in timeserie:
+            sort_timeserie(timeserie)
         else:
-            stack.extend(timeSerie.values())
+            stack.extend(timeserie.values())
     return resDict

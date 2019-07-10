@@ -1,11 +1,11 @@
 import json
-from AerisRequester.codec import Path, frozendict
+from AerisRequester.codec import Path, FrozenDict
 
-def PrettyPrint(dataDict):
+def pretty_print(dataDict):
     def default(obj):
         if isinstance(obj, Path):
             return obj._keys
-        if isinstance(obj, (frozendict, dict)):
+        if isinstance(obj, (FrozenDict, dict)):
             return obj._dict
     print(json.dumps(
         dataDict, default=default, indent=4,

@@ -1,9 +1,8 @@
 import sys
 import datetime
 from google.protobuf.timestamp_pb2 import Timestamp
-from AerisRequester.grpc_client import GRPCClient, CreateQuery
-from AerisRequester.codec import frozendict, Path
-from utils import PrettyPrint
+from AerisRequester.grpc_client import GRPCClient, create_query
+from utils import pretty_print
 
 
 def main(apiserverAddr, days=0, hours=1, minutes=0):
@@ -16,13 +15,13 @@ def main(apiserverAddr, days=0, hours=1, minutes=0):
         "activeEvents"
     ]
     query = [
-        CreateQuery([(pathElts, [])], "analytics")
+        create_query([(pathElts, [])], "analytics")
     ]
 
     with GRPCClient(apiserverAddr) as client:
-        for batch in client.Get(query, start=start):
+        for batch in client.get(query, start=start):
             for notif in batch["notifications"]:
-                PrettyPrint(notif["updates"])
+                pretty_print(notif["updates"])
     return 0
 
 

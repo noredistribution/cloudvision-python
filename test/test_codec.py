@@ -4,28 +4,29 @@ import numpy as np
 import yaml
 import logging
 import msgpack
-from AerisRequester.codec import Encoder, Decoder, frozendict, Float32
+from AerisRequester.codec import Encoder, Decoder, FrozenDict, Float32
 
 def grouped(it, n):
     return zip(*[iter(it)]*n)
+
 # makeComplex creates a complex dictionary using a list of pairs
-def makeComplex(l):
+def make_complex(l):
     res = {}
     for k, v in grouped(l, 2):
         if isinstance(k, dict):
-            k = frozendict(k)
+            k = FrozenDict(k)
         res[k] = v
-    return frozendict(res)
+    return FrozenDict(res)
 
 
-def runTest(encoder, decoder, test, inp):
+def run_test(encoder, decoder, test, inp):
     expected = bytearray(test["out"])
-    res = encoder.Encode(inp)
+    res = encoder.encode(inp)
     if res != expected:
         logging.error("Bad encoding for %s. Got %s expected %s"
                       % (test["name"], res, expected))
         return
-    rev = decoder.Decode(res)
+    rev = decoder.decode(res)
     if rev != inp:
         logging.error("Bad decoding for %s. Got %s expected %s"
                       % (test["name"], rev, inp))
@@ -52,9 +53,9 @@ preprocessing = {
     "str": identity,
     "bytes": bytes,
     "array": identity,
-    "map": lambda x: frozendict(x),
-    "complex": makeComplex,
-    "pointer": lambda x: msgpack.ExtType(0, encoder.Encode(x)),
+    "map": lambda x: FrozenDict(x),
+    "complex": make_complex,
+    "pointer": lambda x: msgpack.ExtType(0, encoder.encode(x)),
     "nil": lambda x: None
 }
 
@@ -62,4 +63,4 @@ for t in testDict["tests"]:
     testType, testVal = next(((key, val) for key, val in t.items()
                               if key != 'name' and key != 'out'))
     testVal = preprocessing[testType](testVal)
-    runTest(encoder, decoder, t, testVal)
+    run_test(encoder, decoder, t, testVal)
