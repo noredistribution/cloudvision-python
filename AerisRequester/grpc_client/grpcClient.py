@@ -1,10 +1,9 @@
-import os
-import sys
-import grpc
+import AerisRequester.codec as codec
+import AerisRequester.gen.notification_pb2 as ntf
 import AerisRequester.gen.router_pb2 as rtr
 import AerisRequester.gen.router_pb2_grpc as rtr_client
-import AerisRequester.gen.notification_pb2 as ntf
-import AerisRequester.codec as codec
+
+import grpc
 
 
 def create_query(pathKeys, dId, dtype="device"):

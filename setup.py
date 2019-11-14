@@ -1,3 +1,4 @@
+"""Import readme and create package info."""
 import setuptools
 
 with open("README.md", "r") as fh:

@@ -1,4 +1,4 @@
-from collections import Mapping
+from collections.abc import Mapping
 PointerType = 0
 WildcardType = 1
 
@@ -14,9 +14,11 @@ class Wildcard(object):
 
 
 class FrozenDict(Mapping):
-    """
-    An immutable wrapper around dictionaries that implements the complete :py:class:`collections.Mapping`
-    interface. It can be used as a drop-in replacement for dictionaries where immutability is desired.
+    """An immutable wrapper around dictionaries.
+
+    FrozenDict implements the complete :py:class:`collections.Mapping`
+    interface. It can be used as a drop-in replacement for dictionaries where
+    immutability is desired, for instance with complex map keys.
     """
 
     dict_cls = dict
@@ -53,16 +55,30 @@ class FrozenDict(Mapping):
 
     # Used in with sort_keys when dumping json
     def __gt__(self, other):
-        return tuple(sorted(self._dict.items())) < tuple(sorted(other._dict.items()))
+        return tuple(sorted(self._dict.items())) < \
+                tuple(sorted(other._dict.items()))
 
     def __eq__(self, other):
-        return tuple(sorted(self._dict.items())) == tuple(sorted(other._dict.items()))
+        return tuple(sorted(self._dict.items())) == \
+                tuple(sorted(other._dict.items()))
 
 
 class Path(object):
 
-    def __init__(self, keys=[]):
+    def __init__(self, keys=None):
+        if keys is None:
+            keys = []
         self._keys = keys
 
     def __repr__(self):
         return self._keys.__str__()
+
+    def __eq__(self, other):
+        """ Two paths are equal if all keys are equal """
+        if isinstance(other, Path) and len(other._keys) == len(self._keys):
+            for s, o in zip(self._keys, other._keys):
+                if s != o:
+                    return False
+
+            return True
+        return False
