@@ -1,6 +1,5 @@
 import logging
-from collections import deque
-name="AerisRequester"
+name = "AerisRequester"
 
 
 def process_notifs(stream, paths={}, keys={}, nominalKeys=None):
@@ -24,6 +23,7 @@ def process_notifs(stream, paths={}, keys={}, nominalKeys=None):
                 res = __update_dict(res, dname, path, key, nominalKeys, value, time)
     return res
 
+
 def __get_val(nominal, nomKeys):
     res = nominal
     if nomKeys is None:
@@ -31,14 +31,15 @@ def __get_val(nominal, nomKeys):
     for k in nomKeys:
         if k not in res:
             logging.error(
-"""
-Key  %s not found in json %s
-Full nominal %s
-Nominal key path %s
-""" % (k, res, nominal, nomKeys))
+                """
+                Key  %s not found in json %s
+                Full nominal %s
+                Nominal key path %s
+                """ % (k, res, nominal, nomKeys))
             return None
         res = res[k]
     return res
+
 
 def __update_dict(resDict, dataset, path, key, nominalKeys, val, ts):
     entry = resDict.setdefault(dataset,
@@ -49,6 +50,7 @@ def __update_dict(resDict, dataset, path, key, nominalKeys, val, ts):
     entry.setdefault("values", []).append(val)
     entry.setdefault("timestamps", []).append(ts)
     return resDict
+
 
 def sort_dict(resDict):
     """

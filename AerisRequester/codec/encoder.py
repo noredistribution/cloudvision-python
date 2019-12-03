@@ -3,6 +3,7 @@ import io
 from AerisRequester.codec import Float32, PointerType, WildcardType
 from AerisRequester.codec import Wildcard, Path, FrozenDict
 
+
 class Encoder(object):
 
     def __init__(self):

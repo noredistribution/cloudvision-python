@@ -56,11 +56,11 @@ class FrozenDict(Mapping):
     # Used in with sort_keys when dumping json
     def __gt__(self, other):
         return tuple(sorted(self._dict.items())) < \
-                tuple(sorted(other._dict.items()))
+            tuple(sorted(other._dict.items()))
 
     def __eq__(self, other):
         return tuple(sorted(self._dict.items())) == \
-                tuple(sorted(other._dict.items()))
+            tuple(sorted(other._dict.items()))
 
 
 class Path(object):

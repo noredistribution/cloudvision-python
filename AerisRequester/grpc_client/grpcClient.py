@@ -43,7 +43,7 @@ def create_notification(ts, paths, deletes=None, updates=[], retracts=[]):
             key=encoder.encode(k),
             value=encoder.encode(v)) for k, v in updates
     ]
-    ret = [encoder.Encoder(r) for r in retracts]
+    ret = [encoder.encode(r) for r in retracts]
     pathElts = [encoder.encode(elt) for elt in paths]
     return ntf.Notification(
         timestamp=ts,
@@ -123,7 +123,7 @@ class GRPCClient(object):
             query=querries
         )
         if sharding is not None:
-            res.sharded_sub = sharding
+            req.sharded_sub = sharding
         stream = self.__client.Subscribe(req)
         return (self.decode_batch(nb) for nb in stream)
 
