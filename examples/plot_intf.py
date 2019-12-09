@@ -4,9 +4,12 @@ import datetime
 from AerisRequester.grpc_client import GRPCClient, create_query
 from AerisRequester import process_notifs, sort_dict
 import matplotlib.pyplot as plt
-import matplotlib.dates as md
+from parser import base
 
-def main(apiserverAddr, dId, intfId, versions):
+
+# this example is having some issues compared to others, I'm moving onto others
+# for now
+def main(apiserverAddr, dId, intfId, versions, token=None, cert=None, key=None):
     versions = int(versions)
     pathElts = [
         "Devices",
@@ -18,14 +21,15 @@ def main(apiserverAddr, dId, intfId, versions):
         "rates",
     ]
     query = [
-        create_query([(pathElts, ["outOctets"])], "analytics")
+        create_query([(pathElts, [])], "analytics")
     ]
 
-    with GRPCClient(apiserverAddr) as client:
+    with GRPCClient(apiserverAddr, token=token, certs=cert, key=key) as client:
         stream = client.get(query, versions=versions)
         dataDict = process_notifs(stream)
         # Order by timestamps
         dataDict = sort_dict(dataDict)
+        print(dataDict)
 
         # Formatting dates
         vals = dataDict["analytics"]["/".join(pathElts)]["outOctets"]["values"]
@@ -41,7 +45,11 @@ def main(apiserverAddr, dId, intfId, versions):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 4:
-        print("usage: ", sys.argv[0], "<apiserverAddresss> <deviceID> <intfID> <versions>")
-        exit(2)
-    exit(main(*sys.argv[1:]))
+    base.add_argument("--versions", default=100, type=int,
+                      help="number of versions (rates) to fetch")
+    base.add_argument("--device", type=str, help="device to fetch rates for")
+    base.add_argument("--interface", type=str, help="interface to fetch rates for")
+    args = base.parse_args()
+
+    exit(main(args.apiserver, args.device, args.interface, args.versions,
+              cert=args.certFile, key=args.keyFile, token=args.tokenFile))

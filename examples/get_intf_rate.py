@@ -1,9 +1,9 @@
-import sys
 from AerisRequester.grpc_client import GRPCClient, create_query
 from utils import pretty_print
+from parser import base
 
 
-def main(apiserverAddr, dId, intfId):
+def main(apiserverAddr, dId, intfId, token=None, cert=None, key=None):
     pathElts = [
         "Devices",
         dId,
@@ -17,7 +17,7 @@ def main(apiserverAddr, dId, intfId):
         create_query([(pathElts, ["outOctets"])], "analytics")
     ]
 
-    with GRPCClient(apiserverAddr) as client:
+    with GRPCClient(apiserverAddr, token=token, certs=cert, key=key) as client:
         for batch in client.subscribe(query):
             for notif in batch["notifications"]:
                 pretty_print(notif["updates"])
@@ -25,7 +25,9 @@ def main(apiserverAddr, dId, intfId):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 4:
-        print("usage: ", sys.argv[0], "<apiserverAddress> <deviceID> <intfID>")
-        exit(2)
-    exit(main(*sys.argv[1:]))
+    base.add_argument("--device", type=str, help="device to subscribe to")
+    base.add_argument("--interface", type=str, help="interface to subscribe to")
+    args = base.parse_args()
+
+    exit(main(args.apiserver, args.device, args.interface,
+              cert=args.certFile, key=args.keyFile, token=args.tokenFile))

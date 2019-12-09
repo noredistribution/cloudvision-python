@@ -9,6 +9,7 @@ def process_notifs(stream, paths={}, keys={}, nominalKeys=None):
     of a given time serie.
     """
     res = {}
+
     for batch in stream:
         dname = batch["dataset"]["name"]
         for notif in batch["notifications"]:

@@ -36,6 +36,7 @@ def create_notification(ts, paths, deletes=None, updates=[], retracts=[]):
     """
     encoder = codec.Encoder()
     # An empty list would mean deleteAll
+    dels = None
     if deletes is not None:
         dels = [encoder.encode(d) for d in deletes]
     upd = [
@@ -61,21 +62,37 @@ class GRPCClient(object):
     certs, if present, must be the path to the cert file.
     """
 
-    def __init__(self, grpcAddr, certs=None, key=None, ca=None):
-        if certs is None or key is None:
+    def __init__(self, grpcAddr, *, certs=None, key=None, ca=None, token=None):
+
+        if (certs is None or key is None) and token is None:
             self.channel = grpc.insecure_channel(grpcAddr)
         else:
+            tokCreds = None
+            if token:
+                with open(token, 'rb') as f:
+                    tokData = f.read()
+                    tokCreds = grpc.access_token_call_credentials(tokData)
+
+            certData = None
+            if certs:
+                with open(certs, 'rb') as f:
+                    certData = f.read()
+            keyData = None
+            if key:
+                with open(key, 'rb') as f:
+                    keyData = f.read()
             caData = None
-            with open(certs, 'rb') as f:
-                certData = f.read()
-            with open(key, 'rb') as f:
-                keyData = f.read()
             if ca:
                 with open(ca, 'rb') as f:
                     caData = f.read()
+
             creds = grpc.ssl_channel_credentials(certificate_chain=certData,
                                                  private_key=keyData,
                                                  root_certificates=caData)
+
+            if tokCreds:
+                creds = grpc.composite_channel_credentials(creds, tokCreds)
+
             self.channel = grpc.secure_channel(grpcAddr, creds)
         self.__client = rtr_client.RouterV1Stub(self.channel)
 
@@ -92,17 +109,17 @@ class GRPCClient(object):
     def close(self):
         self.channel.close()
 
-    def get(self, querries, start=None, end=None,
+    def get(self, queries, start=None, end=None,
             versions=None, sharding=None):
         """
         Get creates and executes a Get protobuf message, returning a stream of
         notificationBatch.
-        querries must be a list of querry protobuf messages.
+        queries must be a list of querry protobuf messages.
         start and end, if present, must be nanoseconds timestamps (uint64).
         sharding, if present must be a protobuf sharding message.
          """
         request = rtr.GetRequest(
-            query=querries,
+            query=queries,
             start=start,
             end=end,
             versions=versions
@@ -112,15 +129,15 @@ class GRPCClient(object):
         stream = self.__client.Get(request)
         return (self.decode_batch(nb) for nb in stream)
 
-    def subscribe(self, querries, sharding=None):
+    def subscribe(self, queries, sharding=None):
         """
         Subscribe creates and executes a Subscribe protobuf message,
         returning a stream of notificationBatch.
-        querries must be a list of querry protobuf messages.
+        queries must be a list of querry protobuf messages.
         sharding, if present must be a protobuf sharding message.
         """
         req = rtr.SubscribeRequest(
-            query=querries
+            query=queries
         )
         if sharding is not None:
             req.sharded_sub = sharding

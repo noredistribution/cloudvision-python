@@ -1,6 +1,7 @@
 import json
 from AerisRequester.codec import Path, FrozenDict
 
+
 def pretty_print(dataDict):
     def default(obj):
         if isinstance(obj, Path):
