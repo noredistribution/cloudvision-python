@@ -4,9 +4,11 @@ import AerisRequester.gen.router_pb2 as rtr
 import AerisRequester.gen.router_pb2_grpc as rtr_client
 
 import grpc
+import google.protobuf.timestamp_pb2 as pbts
+from typing import Sequence, Optional, Any, Tuple
 
 
-def create_query(pathKeys, dId, dtype="device"):
+def create_query(pathKeys: Sequence[Any], dId: str, dtype: str = "device"):
     """
     create_query creates a protobuf query message with dataset ID dId
     and dataset type dtype.
@@ -26,7 +28,12 @@ def create_query(pathKeys, dId, dtype="device"):
     )
 
 
-def create_notification(ts, paths, deletes=None, updates=[], retracts=[]):
+def create_notification(ts: pbts.Timestamp,
+                        paths: Sequence[Any],
+                        deletes: Optional[Sequence[Any]] = None,
+                        updates: Optional[Sequence[Tuple[Any, Any]]] = None,
+                        retracts: Optional[Sequence[Any]] = None) \
+        -> ntf.Notification:
     """
     create_notification creates a notification protobuf message.
     ts must be of the type google.protobuf.timestamp_pb2.Timestamp
@@ -35,22 +42,28 @@ def create_notification(ts, paths, deletes=None, updates=[], retracts=[]):
     updates, if present, must be of the form [(key, value)...]
     """
     encoder = codec.Encoder()
-    # An empty list would mean deleteAll
+    # An empty list would mean deleteAll so distinguish z/w empty and None
     dels = None
     if deletes is not None:
         dels = [encoder.encode(d) for d in deletes]
-    upd = [
-        ntf.Notification.Update(
-            key=encoder.encode(k),
-            value=encoder.encode(v)) for k, v in updates
-    ]
-    ret = [encoder.encode(r) for r in retracts]
+
+    upds = None
+    if updates is not None:
+        upds = [
+            ntf.Notification.Update(
+                key=encoder.encode(k),
+                value=encoder.encode(v)) for k, v in updates
+        ]
+    rets = None
+    if retracts is not None:
+        rets = [encoder.encode(r) for r in retracts]
+
     pathElts = [encoder.encode(elt) for elt in paths]
     return ntf.Notification(
         timestamp=ts,
         deletes=dels,
-        updates=upd,
-        retracts=ret,
+        updates=upds,
+        retracts=rets,
         path_elements=pathElts
     )
 
@@ -58,11 +71,15 @@ def create_notification(ts, paths, deletes=None, updates=[], retracts=[]):
 class GRPCClient(object):
     """
     GRPCClient implements the protobuf client as well as its methods.
-    grpcAddr must be a valid apiserver adress
+    grpcAddr must be a valid apiserver adress in the format <ADDRESS>:<PORT>
     certs, if present, must be the path to the cert file.
+    key, if present, must be the path to .pem key file.
+    token, if present, must be the path a .tok user access token.
+
     """
 
-    def __init__(self, grpcAddr, *, certs=None, key=None, ca=None, token=None):
+    def __init__(self, grpcAddr: str, *, certs: str = None, key: str = None,
+                 ca: str = None, token: str = None):
 
         if (certs is None or key is None) and token is None:
             self.channel = grpc.insecure_channel(grpcAddr)
