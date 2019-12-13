@@ -5,10 +5,10 @@ import AerisRequester.gen.router_pb2_grpc as rtr_client
 
 import grpc
 import google.protobuf.timestamp_pb2 as pbts
-from typing import Sequence, Optional, Any, Tuple
+from typing import List, Optional, Any, Tuple
 
 
-def create_query(pathKeys: Sequence[Any], dId: str, dtype: str = "device"):
+def create_query(pathKeys: List[Any], dId: str, dtype: str = "device"):
     """
     create_query creates a protobuf query message with dataset ID dId
     and dataset type dtype.
@@ -29,10 +29,10 @@ def create_query(pathKeys: Sequence[Any], dId: str, dtype: str = "device"):
 
 
 def create_notification(ts: pbts.Timestamp,
-                        paths: Sequence[Any],
-                        deletes: Optional[Sequence[Any]] = None,
-                        updates: Optional[Sequence[Tuple[Any, Any]]] = None,
-                        retracts: Optional[Sequence[Any]] = None) \
+                        paths: List[Any],
+                        deletes: Optional[List[Any]] = None,
+                        updates: Optional[List[Tuple[Any, Any]]] = None,
+                        retracts: Optional[List[Any]] = None) \
         -> ntf.Notification:
     """
     create_notification creates a notification protobuf message.
@@ -139,10 +139,9 @@ class GRPCClient(object):
             query=queries,
             start=start,
             end=end,
-            versions=versions
+            versions=versions,
+            sharded_sub=sharding
         )
-        if sharding is not None:
-            request.sharded_sub = sharding
         stream = self.__client.Get(request)
         return (self.decode_batch(nb) for nb in stream)
 
@@ -153,11 +152,11 @@ class GRPCClient(object):
         queries must be a list of querry protobuf messages.
         sharding, if present must be a protobuf sharding message.
         """
+
         req = rtr.SubscribeRequest(
-            query=queries
+            query=queries,
+            sharded_sub=sharding
         )
-        if sharding is not None:
-            req.sharded_sub = sharding
         stream = self.__client.Subscribe(req)
         return (self.decode_batch(nb) for nb in stream)
 
