@@ -4,7 +4,7 @@ from utils import pretty_print
 from parser import base
 
 
-def main(apiserverAddr, token=None, certs=None, key=None):
+def main(apiserverAddr, token=None, certs=None, key=None, ca=None):
     pathElts = [
         "DatasetInfo",
         "Devices"
@@ -13,7 +13,8 @@ def main(apiserverAddr, token=None, certs=None, key=None):
         create_query([(pathElts, [])], "analytics")
     ]
 
-    with GRPCClient(apiserverAddr, token=token, key=key, certs=certs) as client:
+    with GRPCClient(apiserverAddr, token=token, key=key,
+                    ca=ca, certs=certs) as client:
         for batch in client.get(query):
             for notif in batch["notifications"]:
                 pretty_print(notif["updates"])
@@ -23,4 +24,4 @@ def main(apiserverAddr, token=None, certs=None, key=None):
 if __name__ == "__main__":
     args = base.parse_args()
     exit(main(args.apiserver, certs=args.certFile, key=args.keyFile,
-              token=args.tokenFile))
+              ca=args.caFile, token=args.tokenFile))

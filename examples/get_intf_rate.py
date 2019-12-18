@@ -3,7 +3,7 @@ from utils import pretty_print
 from parser import base
 
 
-def main(apiserverAddr, dId, intfId, token=None, cert=None, key=None):
+def main(apiserverAddr, dId, intfId, token=None, cert=None, key=None, ca=None):
     pathElts = [
         "Devices",
         dId,
@@ -17,7 +17,8 @@ def main(apiserverAddr, dId, intfId, token=None, cert=None, key=None):
         create_query([(pathElts, ["outOctets"])], "analytics")
     ]
 
-    with GRPCClient(apiserverAddr, token=token, certs=cert, key=key) as client:
+    with GRPCClient(apiserverAddr, token=token, certs=cert, key=key,
+                    ca=ca) as client:
         for batch in client.subscribe(query):
             for notif in batch["notifications"]:
                 pretty_print(notif["updates"])
@@ -29,5 +30,5 @@ if __name__ == "__main__":
     base.add_argument("--interface", type=str, help="interface to subscribe to")
     args = base.parse_args()
 
-    exit(main(args.apiserver, args.device, args.interface,
+    exit(main(args.apiserver, args.device, args.interface, ca=args.caFile,
               cert=args.certFile, key=args.keyFile, token=args.tokenFile))

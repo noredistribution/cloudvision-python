@@ -78,8 +78,13 @@ class GRPCClient(object):
 
     """
 
+    AUTH_KEY_PATH = "access_token"
+
     def __init__(self, grpcAddr: str, *, certs: str = None, key: str = None,
                  ca: str = None, token: str = None):
+
+        # used to store the auth token for per request auth
+        self.metadata = None
 
         if (certs is None or key is None) and token is None:
             self.channel = grpc.insecure_channel(grpcAddr)
@@ -89,6 +94,8 @@ class GRPCClient(object):
                 with open(token, 'rb') as f:
                     tokData = f.read()
                     tokCreds = grpc.access_token_call_credentials(tokData)
+                    self.metadata = ((self.AUTH_KEY_PATH,
+                                      tokData.decode("ASCII").replace("\n", "")),)
 
             certData = None
             if certs:
@@ -140,9 +147,10 @@ class GRPCClient(object):
             start=start,
             end=end,
             versions=versions,
-            sharded_sub=sharding
+            sharded_sub=sharding,
         )
-        stream = self.__client.Get(request)
+        print(self.metadata)
+        stream = self.__client.Get(request, metadata=self.metadata)
         return (self.decode_batch(nb) for nb in stream)
 
     def subscribe(self, queries, sharding=None):
@@ -157,7 +165,7 @@ class GRPCClient(object):
             query=queries,
             sharded_sub=sharding
         )
-        stream = self.__client.Subscribe(req)
+        stream = self.__client.Subscribe(req, metadata=self.metadata)
         return (self.decode_batch(nb) for nb in stream)
 
     def publish(self, dtype, dId, sync, compare, notifs):
@@ -174,7 +182,7 @@ class GRPCClient(object):
             sync=sync,
             compare=compare
         )
-        self.__client.Publish(req)
+        self.__client.Publish(req, metadata=self.metadata)
 
     def get_datasets(self, types=[]):
         """
@@ -191,7 +199,7 @@ class GRPCClient(object):
         req = rtr.CreateDatasetRequest(
             dataset=ntf.Dataset(type=dtype, name=dId)
         )
-        self.__client.CreateDataset(req)
+        self.__client.CreateDataset(req, metadata=self.metadata)
 
     def decode_batch(self, batch):
         res = {

@@ -3,7 +3,8 @@ from AerisRequester.grpc_client import GRPCClient, create_notification
 from parser import base
 
 
-def main(apiserverAddr, dType, dId, path, dKey, token=None, cert=None, key=None):
+def main(apiserverAddr, dType, dId, path, dKey, token=None, cert=None,
+         key=None, ca=None):
     ts = Timestamp()
     ts.GetCurrentTime()
 
@@ -13,7 +14,8 @@ def main(apiserverAddr, dType, dId, path, dKey, token=None, cert=None, key=None)
 
     pathElts = path.split("/")
     notifs = [create_notification(ts, pathElts, deletes=[dKey])]
-    with GRPCClient(apiserverAddr, token=token, key=key, certs=cert) as client:
+    with GRPCClient(apiserverAddr, token=token, key=key,
+                    certs=cert, ca=ca) as client:
         client.publish(dType, dId, sync, compare, notifs)
     return 0
 
@@ -28,5 +30,5 @@ if __name__ == "__main__":
     args = base.parse_args()
 
     exit(main(args.apiserver, args.dType, args.dId, args.path,
-              args.delKey, cert=args.certFile,
+              args.delKey, cert=args.certFile, ca=args.caFile,
               key=args.keyFile, token=args.tokenFile))

@@ -9,7 +9,8 @@ from parser import base
 
 # this example is having some issues compared to others, I'm moving onto others
 # for now
-def main(apiserverAddr, dId, intfId, versions, token=None, cert=None, key=None):
+def main(apiserverAddr, dId, intfId, versions, token=None, cert=None,
+         key=None, ca=None):
     versions = int(versions)
     pathElts = [
         "Devices",
@@ -24,7 +25,8 @@ def main(apiserverAddr, dId, intfId, versions, token=None, cert=None, key=None):
         create_query([(pathElts, [])], "analytics")
     ]
 
-    with GRPCClient(apiserverAddr, token=token, certs=cert, key=key) as client:
+    with GRPCClient(apiserverAddr, token=token, certs=cert, key=key,
+            ca=ca) as client:
         stream = client.get(query, versions=versions)
         dataDict = process_notifs(stream)
         # Order by timestamps
@@ -52,4 +54,5 @@ if __name__ == "__main__":
     args = base.parse_args()
 
     exit(main(args.apiserver, args.device, args.interface, args.versions,
-              cert=args.certFile, key=args.keyFile, token=args.tokenFile))
+              cert=args.certFile, key=args.keyFile, token=args.tokenFile,
+              ca=args.caFile))
