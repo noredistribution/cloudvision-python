@@ -12,6 +12,7 @@ Authentication scheme used to connect to CloudVision. Possible values
 
     "none": no authentication
     "none-tls[,{caFile}]": no authentication, TLS encryption
+    "token,{tokenFile}[,{caFile}]": access token based authentication
     "certs,{certFile},{keyFile}[,{caFile}]": client-side certificate
 """
 
@@ -24,7 +25,7 @@ class AuthAction(argparse.Action):
 
     'none': no authentication
     'none-tls[,{caFile}]': no authentication, TLS encryption
-    'token,{tokenFile}': client-side certificate with token-based enrollment
+    'token,{tokenFile}[,{caFile}]': access token based authentication
     'certs,{certFile},{keyFile}[,{caFile}]': client-side certificate
     """
     NONE = 'none'
@@ -79,10 +80,12 @@ class AuthAction(argparse.Action):
             if len(authargs) == 3:
                 opts['caFile'] = os.path.expanduser(authargs[2])
         elif authtype == self.TOKEN:
-            if len(authargs) != 1:
+            if len(authargs) != 1 and len(authargs) != 2:
                 err = "expected exactly 1 argument for 'token' auth, got %d"
                 raise argparse.ArgumentError(self, err % len(authargs))
             opts['tokenFile'] = os.path.expanduser(authargs[0])
+            if len(authargs) == 2:
+                opts['caFile'] = os.path.expanduser(authargs[1])
 
         for opt, val in opts.items():
             setattr(namespace, opt, val)
