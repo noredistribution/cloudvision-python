@@ -1,10 +1,10 @@
-import sys
 from AerisRequester.grpc_client import GRPCClient, create_query
 from AerisRequester.codec import Wildcard
 from utils import pretty_print
+from parser import base
 
 
-def main(apiserverAddr, dId):
+def main(apiserverAddr, dId, token=None, cert=None, ca=None):
     pathElts = [
         "Sysdb",
         "interface",
@@ -28,7 +28,9 @@ def main(apiserverAddr, dId):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        print("usage: ", sys.argv[0], "<apiserverAddress> <datasetID>")
-        exit(2)
-    exit(main(*sys.argv[1:]))
+    base.add_argument("--deviceId",
+                      help="device id/serial number to query intfStatus for")
+    args = base.parse_args()
+
+    exit(main(args.apiserverAddr, args.deviceId, token=args.tokenFile,
+         cert=args.certFile, ca=args.caFile))

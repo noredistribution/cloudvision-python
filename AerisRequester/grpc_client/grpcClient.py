@@ -149,7 +149,6 @@ class GRPCClient(object):
             versions=versions,
             sharded_sub=sharding,
         )
-        print(self.metadata)
         stream = self.__client.Get(request, metadata=self.metadata)
         return (self.decode_batch(nb) for nb in stream)
 
