@@ -1,3 +1,6 @@
+from datetime import datetime
+from typing import List, Optional, Any, Tuple, Union
+
 import AerisRequester.codec as codec
 import AerisRequester.gen.notification_pb2 as ntf
 import AerisRequester.gen.router_pb2 as rtr
@@ -5,10 +8,24 @@ import AerisRequester.gen.router_pb2_grpc as rtr_client
 
 import grpc
 import google.protobuf.timestamp_pb2 as pbts
-from typing import List, Optional, Any, Tuple
+
+TIME_TYPE = Union[pbts.Timestamp, datetime]
+UPDATE_TYPE = Tuple[Any, Any]
+UPDATES_TYPE = List[UPDATE_TYPE]
 
 
-def create_query(pathKeys: List[Any], dId: str, dtype: str = "device"):
+def to_pbts(ts: TIME_TYPE) -> pbts.Timestamp:
+    if isinstance(ts, datetime):
+        x = pbts.Timestamp()
+        x.FromDatetime(ts)  # type: ignore
+        return x
+    elif isinstance(ts, pbts.Timestamp):
+        return ts
+    else:
+        raise TypeError("timestamp must be a datetime or protobuf timestamp")
+
+
+def create_query(pathKeys: List[Any], dId: str, dtype: str = "device") -> rtr.Query:
     """
     create_query creates a protobuf query message with dataset ID dId
     and dataset type dtype.
@@ -28,19 +45,21 @@ def create_query(pathKeys: List[Any], dId: str, dtype: str = "device"):
     )
 
 
-def create_notification(ts: pbts.Timestamp,
+def create_notification(ts: TIME_TYPE,
                         paths: List[Any],
                         deletes: Optional[List[Any]] = None,
-                        updates: Optional[List[Tuple[Any, Any]]] = None,
+                        updates: Optional[UPDATES_TYPE] = None,
                         retracts: Optional[List[Any]] = None) \
         -> ntf.Notification:
     """
     create_notification creates a notification protobuf message.
-    ts must be of the type google.protobuf.timestamp_pb2.Timestamp
-    paths must be a list of path elements
-    deletes and retracts, if present, must be lists of keys
-    updates, if present, must be of the form [(key, value)...]
+    ts must be a google.protobuf.timestamp_pb2.Timestamp or a
+    python datetime object.
+    paths must be a list of path elements.
+    deletes and retracts, if present, must be lists of keys.
+    updates, if present, must be of the form [(key, value)...].
     """
+    proto_ts = to_pbts(ts)
     encoder = codec.Encoder()
     # An empty list would mean deleteAll so distinguish z/w empty and None
     dels = None
@@ -60,7 +79,7 @@ def create_notification(ts: pbts.Timestamp,
 
     pathElts = [encoder.encode(elt) for elt in paths]
     return ntf.Notification(
-        timestamp=ts,
+        timestamp=proto_ts,
         deletes=dels,
         updates=upds,
         retracts=rets,
@@ -71,17 +90,18 @@ def create_notification(ts: pbts.Timestamp,
 class GRPCClient(object):
     """
     GRPCClient implements the protobuf client as well as its methods.
-    grpcAddr must be a valid apiserver adress in the format <ADDRESS>:<PORT>
+    grpcAddr must be a valid apiserver adress in the format <ADDRESS>:<PORT>.
     certs, if present, must be the path to the cert file.
     key, if present, must be the path to .pem key file.
+    ca, if present, must be the path to a root certificate authority file.
     token, if present, must be the path a .tok user access token.
-
     """
 
     AUTH_KEY_PATH = "access_token"
 
-    def __init__(self, grpcAddr: str, *, certs: str = None, key: str = None,
-                 ca: str = None, token: str = None):
+    def __init__(self, grpcAddr: str, *, certs: Optional[str] = None,
+                 key: Optional[str] = None, ca: Optional[str] = None,
+                 token: Optional[str] = None) -> None:
 
         # used to store the auth token for per request auth
         self.metadata = None
@@ -119,6 +139,7 @@ class GRPCClient(object):
 
             self.channel = grpc.secure_channel(grpcAddr, creds)
         self.__client = rtr_client.RouterV1Stub(self.channel)
+        self.__auth_client = rtr_client.AuthStub(self.channel)
 
         self.encoder = codec.Encoder()
         self.decoder = codec.Decoder()
@@ -133,19 +154,28 @@ class GRPCClient(object):
     def close(self):
         self.channel.close()
 
-    def get(self, queries, start=None, end=None,
-            versions=None, sharding=None):
+    def get(self, queries: List[rtr.Query], start: Optional[TIME_TYPE] = None,
+            end: Optional[TIME_TYPE] = None,
+            versions: Optional[int] = None, sharding=None):
         """
         Get creates and executes a Get protobuf message, returning a stream of
         notificationBatch.
         queries must be a list of querry protobuf messages.
         start and end, if present, must be nanoseconds timestamps (uint64).
         sharding, if present must be a protobuf sharding message.
-         """
+        """
+        end_ts: Optional[int] = None
+        start_ts: Optional[int] = None
+        if end:
+            end_ts = to_pbts(end).ToNanoseconds()
+
+        if start:
+            start_ts = to_pbts(start).ToNanoseconds()
+
         request = rtr.GetRequest(
             query=queries,
-            start=start,
-            end=end,
+            start=start_ts,
+            end=end_ts,
             versions=versions,
             sharded_sub=sharding,
         )
@@ -167,11 +197,21 @@ class GRPCClient(object):
         stream = self.__client.Subscribe(req, metadata=self.metadata)
         return (self.decode_batch(nb) for nb in stream)
 
-    def publish(self, dtype, dId, sync, compare, notifs):
+    def publish(self, dId, notifs: List[ntf.Notification],
+                dtype: str = "device", sync: bool = True,
+                compare: Optional[UPDATE_TYPE] = None) -> None:
         """
         Publish creates and executes a Publish protobuf message.
         refer to AerisRequester/protobufs/router.proto:124
+        default to sync publish being true so that changes are reflected
         """
+        comp_pb = None
+        if compare:
+            key = compare[0]
+            value = compare[1]
+            comp_pb = ntf.Notification.Update(key=self.encoder.encode(key),
+                                              value=self.encoder.encode(value))
+
         req = rtr.PublishRequest(
             batch=ntf.NotificationBatch(
                 d="device",
@@ -179,14 +219,14 @@ class GRPCClient(object):
                 notifications=notifs
             ),
             sync=sync,
-            compare=compare
+            compare=comp_pb,
         )
         self.__client.Publish(req, metadata=self.metadata)
 
-    def get_datasets(self, types=[]):
+    def get_datasets(self, types: Optional[List[str]] = None):
         """
-        GetDatasets retrieves all the dataset streaming on Aeris
-        types, if present, filter the querried dataset by types
+        GetDatasets retrieves all the datasets streaming on Aeris.
+        types, if present, filter the queried dataset by types
         """
         req = rtr.DatasetsRequest(
             types=types
@@ -194,11 +234,11 @@ class GRPCClient(object):
         stream = self.__client.GetDatasets(req)
         return stream
 
-    def create_dataset(self, dtype, dId):
+    def create_dataset(self, dtype, dId) -> None:
         req = rtr.CreateDatasetRequest(
             dataset=ntf.Dataset(type=dtype, name=dId)
         )
-        self.__client.CreateDataset(req, metadata=self.metadata)
+        self.__auth_client.CreateDataset(req, metadata=self.metadata)
 
     def decode_batch(self, batch):
         res = {

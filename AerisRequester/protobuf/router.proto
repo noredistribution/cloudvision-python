@@ -8,6 +8,9 @@ syntax = "proto3";
 import "notification.proto";
 import "sharding.proto";
 import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "gen";
 
 // Path defines a path matcher for a Query.
 message Path {
@@ -53,6 +56,12 @@ message Query {
 //
 // V2:
 //
+// If path elements are not provided:
+//
+// Uses V1 logic.
+//
+// If path elements are provided:
+//
 // Notification filtering is done by queries. For each query, the dataset name and
 // type must be non-empty. Notifications that match the query paths are streamed to
 // the client. The sharded sub field contains information relating to horizontal
@@ -61,6 +70,17 @@ message Query {
 message SubscribeRequest {
    repeated Query query = 1;
    Sharding sharded_sub = 2;
+}
+
+enum PathWildCardExpandType {
+   // WILDCARD_EXPAND_LEGACY falls back to default behavior
+   WILDCARD_EXPAND_LEGACY = 0;
+   // WILDCARD_EXPAND_LATEST means that only latest path pointers will be considered
+   WILDCARD_EXPAND_LATEST = 1;
+   // WILDCARD_EXPAND_EXACT_RANGE means that path pointers satisfying given start/end will be considered
+   WILDCARD_EXPAND_EXACT_RANGE = 2;
+   // WILDCARD_EXPAND_RELAXED_RANGE means that path pointers satisfying 0 to end will be considered
+   WILDCARD_EXPAND_RELAXED_RANGE = 3;
 }
 
 message GetRequest {
@@ -95,10 +115,41 @@ message GetRequest {
    // method for the implementation of horizontal scaling. If not set, no filtering will happen.
    Sharding sharded_sub = 7;
 
-   // Next tag: 8
+   // (Optional) Specifies wildcard expansion strategy when time range is specified.
+   // This option has no effect when time range (start/end) is not used.
+   PathWildCardExpandType wildcard_expand_type = 8;
+
+   // Next tag: 9
    reserved 2;
    reserved "count";
 }
+
+message GetAndSubscribeRequest {
+   repeated Query query = 1;
+
+   // (Optional) Lower bound (inclusive) of time range to retrieve, in nanoseconds since the Epoch.
+   // If `start` is set, the returned results will correspond to a time range query (from `start` to
+   // `end` or now, depending on whether `end` is set or not).
+   // If `start` is not set, this request will execute a "limit" query based on `versions`.
+   // The value 0 corresponds to an unset field.
+   uint64 start = 2;
+
+   // (Optional) Maximum number of versions to retrieve.
+   // If `start` is set, this value is ignored. Otherwise, will return at most (`versions` + 1) past
+   // versions.
+   uint32 versions = 3;
+
+   // (Optional) Whether to return the initial state of the requested paths at time `start`.
+   // The "initial state" is the set of notifications that fully specify the state of the path at
+   // that time. It includes all relevant notifications before (and up to) `start`.
+   // If `start` is not set, this is ignored.
+   bool exact_range = 4;
+
+   // (Optional) Number of client instances, id of the client making the request, and sharding
+   // method for the implementation of horizontal scaling. If not set, no filtering will happen.
+   Sharding sharded_sub = 5;
+}
+
 
 message SearchRequest {
     enum Type {
@@ -108,6 +159,8 @@ message SearchRequest {
       MAC = 1;
       // IP means that Key/Value ip fields will be searched
       IP = 2;
+      // COMPLEX means that a complex key or value will be searched
+      COMPLEX = 3;
     }
     // A search string
     string search = 1;
@@ -118,7 +171,54 @@ message SearchRequest {
     // Start and end time of the notifications returned, inclusive.
     uint64 start = 4;
     uint64 end = 5;
- }
+
+    // Return only the number of results
+    bool count_only = 6;
+
+    // Complex fields search
+    repeated Filter key_filters = 7;
+    repeated Filter value_filters = 8;
+}
+
+// field name and filter value
+message Filter {
+    enum Operator {
+        EQ = 0;     // equal to
+        NEQ = 1;    // not equal to
+        GT = 2;     // greater than
+        GE = 3;     // greater than or equal to
+        LT = 4;     // less than
+        LE = 5;     // less than or equal to
+        RE = 6;     // regex
+        NRE = 7;    // not regex
+        IN = 8;     // in
+        NIN = 9;    // not in
+        SUB = 10;   // substring
+    }
+    // Value, normalized
+    message Value {
+        oneof kind {
+            string str = 1;
+            sint64 int = 2;
+            uint64 uint = 3;
+            double float = 4;
+            bool b = 5;
+            string ip = 6;
+            string mac = 7;
+            ComponentValue comp = 8;
+            MultiValue multi = 9;
+        }
+    }
+    message ComponentValue {
+        map<string,string> value = 1;
+    }
+    message MultiValue {
+        repeated Value values = 1;
+    }
+    string field = 1;
+    Operator op = 2;
+    Value value = 3;
+}
 
 // PublishRequest
 message PublishRequest {
@@ -149,6 +249,65 @@ message DatasetsResponse {
 
 message CreateDatasetRequest {
     Dataset dataset = 1;
+}
+
+// SetPermissionRequest encompasses requests to create/update/delete permissions of each type.
+// A PATH_PERMISSION must contain a set of path<->permission tuples.
+// The INHERIT_PERMISSION only requires the @dataset and @other args.
+// ADMIN_PERMISSION reuses @path but only looks at the @perm field of the first element.
+// Updates require the the client to pass `oldPerm` to avoid race conditions.
+message SetPermissionRequest {
+    enum Type {
+        PATH_PERMISSION = 0;
+        INHERIT_PERMISSION = 1;
+        UNINHERIT_PERMISSION = 2;
+        ADMIN_PERMISSION = 3;
+    }
+    message PathPerm {
+        enum Perm {
+            NULL_PERM_VALUE = 0;
+            READ_PERM = 1;
+            WRITE_PERM = 2;
+            READ_WRITE_PERM = 3;
+        }
+        Path path = 1;
+        Perm newPerm = 2;
+        Perm currentPerm = 3;
+        bool exactMatch = 4;
+    }
+    Type type = 1;
+    Dataset dataset = 2;
+    Dataset other = 3;
+    repeated PathPerm pathPerms = 6;
+}
+
+// A PermissionSet can be represented as a list of SetPermissionRequests
+message PermissionSet {
+    repeated SetPermissionRequest permissions = 1;
+}
+
+message ClusterDescription {
+   // timestamp represent the server's current time.
+   google.protobuf.Timestamp timestamp = 1;
+   string clusterName = 2;
+   uint32 epoch = 3;
+}
+
+// SetPasswordRequest is used to set the password for a dataset.
+message SetPasswordRequest {
+   Dataset dataset = 1;
+   string password = 2;
+}
+
+// CreateSessionRequest is used to create session for user
+message CreateSessionRequest {
+    Dataset dataset = 1;
+}
+
+// CreateSessionResponse returns the issued JWT token
+message CreateSessionResponse {
+    string jwtToken = 1;
+    int64 expiry = 2;
 }
 
 service RouterV1 {
@@ -203,17 +362,44 @@ service RouterV1 {
    // There is no order guarantee for batches received by subscribers.
    // It means that two batches A and B published synchronously (B is published after A)
    // the subscribers can receive batch A first or B second, OR batch B first and A second.
-   // This sis also true for notifications within a batch.
+   // This is also true for notifications within a batch.
    // The backend can decide to split a batch and reorder notifications so subscribers
    // might receive notifications within a batch in a different order that they were published.
    rpc Subscribe (SubscribeRequest) returns (stream NotificationBatch);
 
+   // Get is used to request notifications for a given path over a specified time range.
+   // Wildcards are supported with Get requests, but when given a range of time the server
+   // will resolve all wildcard paths at the starting timestamp of the given range, so any
+   // pointers and/or paths that are created after the given start timestamp will not be
+   // accounted for during wildcard resolution.
    rpc Get (GetRequest) returns (stream NotificationBatch);
 
-   rpc GetDatasets (DatasetsRequest) returns (stream DatasetsResponse);
+   // GetAndSubscribe allows the client to issue one request to do both Get and Subscribe requests.
+   // The server will first send a mix of subscribe and get batches, and there's no distinction
+   // between which batches are subscribe or get batches. Then the server will send a sync signal
+   // signaling that the Get stream has finished. After that, server will stream out only subscribe
+   // batches. There's no order guarantee for batches received by client.
+   rpc GetAndSubscribe (GetAndSubscribeRequest) returns (stream NotificationBatch);
 
+   rpc GetDatasets (DatasetsRequest) returns (stream DatasetsResponse);
+}
+
+service Auth {
    // CreateDataset from a given Dataset wrapped in a CreateDatasetRequest
    rpc CreateDataset (CreateDatasetRequest) returns (google.protobuf.Empty);
+
+   // SetPermission sets a permission for a dataset using a SetPermissionRequest.
+   rpc SetPermission (SetPermissionRequest) returns (google.protobuf.Empty);
+
+   // GetPermissionSet returns the set of all permissions present for the datasets specified
+   // in the 'query'(s) of the GetRequest.
+   rpc GetPermissionSet (GetRequest) returns (stream PermissionSet);
+
+   // SetPassword sets the password for a user.
+   rpc SetPassword (SetPasswordRequest) returns (google.protobuf.Empty);
+
+   // CreateSession creates session for user
+   rpc CreateSession (CreateSessionRequest) returns (stream CreateSessionResponse);
 }
 
 // Alpha services are services which are not supported and
@@ -225,4 +411,10 @@ service Alpha {
    // SearchSubscribe allows the client to request a live stream of updates
    // based on client search request
    rpc SearchSubscribe (SearchRequest) returns (stream NotificationBatch);
+}
+
+// Cluster service gives some descriptions about the cluster where the service
+// is running.
+service Cluster {
+       rpc ClusterInfo(google.protobuf.Empty) returns (stream ClusterDescription);
 }

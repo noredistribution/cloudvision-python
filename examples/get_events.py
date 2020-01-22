@@ -10,7 +10,8 @@ def main(apiserverAddr, token=None, cert=None, key=None, ca=None,
     startDtime = datetime.datetime.now() - datetime.timedelta(days=days,
                                                               hours=hours,
                                                               minutes=minutes)
-    start = Timestamp().FromDatetime(startDtime)
+    start = Timestamp()
+    start.FromDatetime(startDtime) # type: ignore
     pathElts = [
         "events",
         "activeEvents"

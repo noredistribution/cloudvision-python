@@ -31,15 +31,15 @@ class RouterV1Stub(object):
         request_serializer=router__pb2.GetRequest.SerializeToString,
         response_deserializer=notification__pb2.NotificationBatch.FromString,
         )
+    self.GetAndSubscribe = channel.unary_stream(
+        '/RouterV1/GetAndSubscribe',
+        request_serializer=router__pb2.GetAndSubscribeRequest.SerializeToString,
+        response_deserializer=notification__pb2.NotificationBatch.FromString,
+        )
     self.GetDatasets = channel.unary_stream(
         '/RouterV1/GetDatasets',
         request_serializer=router__pb2.DatasetsRequest.SerializeToString,
         response_deserializer=router__pb2.DatasetsResponse.FromString,
-        )
-    self.CreateDataset = channel.unary_unary(
-        '/RouterV1/CreateDataset',
-        request_serializer=router__pb2.CreateDatasetRequest.SerializeToString,
-        response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
         )
 
 
@@ -103,7 +103,7 @@ class RouterV1Servicer(object):
     There is no order guarantee for batches received by subscribers.
     It means that two batches A and B published synchronously (B is published after A)
     the subscribers can receive batch A first or B second, OR batch B first and A second.
-    This sis also true for notifications within a batch.
+    This is also true for notifications within a batch.
     The backend can decide to split a batch and reorder notifications so subscribers
     might receive notifications within a batch in a different order that they were published.
     """
@@ -112,8 +112,23 @@ class RouterV1Servicer(object):
     raise NotImplementedError('Method not implemented!')
 
   def Get(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
+    """Get is used to request notifications for a given path over a specified time range.
+    Wildcards are supported with Get requests, but when given a range of time the server
+    will resolve all wildcard paths at the starting timestamp of the given range, so any
+    pointers and/or paths that are created after the given start timestamp will not be
+    accounted for during wildcard resolution.
+    """
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def GetAndSubscribe(self, request, context):
+    """GetAndSubscribe allows the client to issue one request to do both Get and Subscribe requests.
+    The server will first send a mix of subscribe and get batches, and there's no distinction
+    between which batches are subscribe or get batches. Then the server will send a sync signal
+    signaling that the Get stream has finished. After that, server will stream out only subscribe
+    batches. There's no order guarantee for batches received by client.
+    """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
@@ -121,13 +136,6 @@ class RouterV1Servicer(object):
   def GetDatasets(self, request, context):
     # missing associated documentation comment in .proto file
     pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def CreateDataset(self, request, context):
-    """CreateDataset from a given Dataset wrapped in a CreateDatasetRequest
-    """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
@@ -150,19 +158,130 @@ def add_RouterV1Servicer_to_server(servicer, server):
           request_deserializer=router__pb2.GetRequest.FromString,
           response_serializer=notification__pb2.NotificationBatch.SerializeToString,
       ),
+      'GetAndSubscribe': grpc.unary_stream_rpc_method_handler(
+          servicer.GetAndSubscribe,
+          request_deserializer=router__pb2.GetAndSubscribeRequest.FromString,
+          response_serializer=notification__pb2.NotificationBatch.SerializeToString,
+      ),
       'GetDatasets': grpc.unary_stream_rpc_method_handler(
           servicer.GetDatasets,
           request_deserializer=router__pb2.DatasetsRequest.FromString,
           response_serializer=router__pb2.DatasetsResponse.SerializeToString,
       ),
+  }
+  generic_handler = grpc.method_handlers_generic_handler(
+      'RouterV1', rpc_method_handlers)
+  server.add_generic_rpc_handlers((generic_handler,))
+
+
+class AuthStub(object):
+  # missing associated documentation comment in .proto file
+  pass
+
+  def __init__(self, channel):
+    """Constructor.
+
+    Args:
+      channel: A grpc.Channel.
+    """
+    self.CreateDataset = channel.unary_unary(
+        '/Auth/CreateDataset',
+        request_serializer=router__pb2.CreateDatasetRequest.SerializeToString,
+        response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+        )
+    self.SetPermission = channel.unary_unary(
+        '/Auth/SetPermission',
+        request_serializer=router__pb2.SetPermissionRequest.SerializeToString,
+        response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+        )
+    self.GetPermissionSet = channel.unary_stream(
+        '/Auth/GetPermissionSet',
+        request_serializer=router__pb2.GetRequest.SerializeToString,
+        response_deserializer=router__pb2.PermissionSet.FromString,
+        )
+    self.SetPassword = channel.unary_unary(
+        '/Auth/SetPassword',
+        request_serializer=router__pb2.SetPasswordRequest.SerializeToString,
+        response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+        )
+    self.CreateSession = channel.unary_stream(
+        '/Auth/CreateSession',
+        request_serializer=router__pb2.CreateSessionRequest.SerializeToString,
+        response_deserializer=router__pb2.CreateSessionResponse.FromString,
+        )
+
+
+class AuthServicer(object):
+  # missing associated documentation comment in .proto file
+  pass
+
+  def CreateDataset(self, request, context):
+    """CreateDataset from a given Dataset wrapped in a CreateDatasetRequest
+    """
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def SetPermission(self, request, context):
+    """SetPermission sets a permission for a dataset using a SetPermissionRequest.
+    """
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def GetPermissionSet(self, request, context):
+    """GetPermissionSet returns the set of all permissions present for the datasets specified
+    in the 'query'(s) of the GetRequest.
+    """
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def SetPassword(self, request, context):
+    """SetPassword sets the password for a user.
+    """
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def CreateSession(self, request, context):
+    """CreateSession creates session for user
+    """
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+
+def add_AuthServicer_to_server(servicer, server):
+  rpc_method_handlers = {
       'CreateDataset': grpc.unary_unary_rpc_method_handler(
           servicer.CreateDataset,
           request_deserializer=router__pb2.CreateDatasetRequest.FromString,
           response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
       ),
+      'SetPermission': grpc.unary_unary_rpc_method_handler(
+          servicer.SetPermission,
+          request_deserializer=router__pb2.SetPermissionRequest.FromString,
+          response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+      ),
+      'GetPermissionSet': grpc.unary_stream_rpc_method_handler(
+          servicer.GetPermissionSet,
+          request_deserializer=router__pb2.GetRequest.FromString,
+          response_serializer=router__pb2.PermissionSet.SerializeToString,
+      ),
+      'SetPassword': grpc.unary_unary_rpc_method_handler(
+          servicer.SetPassword,
+          request_deserializer=router__pb2.SetPasswordRequest.FromString,
+          response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+      ),
+      'CreateSession': grpc.unary_stream_rpc_method_handler(
+          servicer.CreateSession,
+          request_deserializer=router__pb2.CreateSessionRequest.FromString,
+          response_serializer=router__pb2.CreateSessionResponse.SerializeToString,
+      ),
   }
   generic_handler = grpc.method_handlers_generic_handler(
-      'RouterV1', rpc_method_handlers)
+      'Auth', rpc_method_handlers)
   server.add_generic_rpc_handlers((generic_handler,))
 
 
@@ -227,4 +346,48 @@ def add_AlphaServicer_to_server(servicer, server):
   }
   generic_handler = grpc.method_handlers_generic_handler(
       'Alpha', rpc_method_handlers)
+  server.add_generic_rpc_handlers((generic_handler,))
+
+
+class ClusterStub(object):
+  """Cluster service gives some descriptions about the cluster where the service
+  is running.
+  """
+
+  def __init__(self, channel):
+    """Constructor.
+
+    Args:
+      channel: A grpc.Channel.
+    """
+    self.ClusterInfo = channel.unary_stream(
+        '/Cluster/ClusterInfo',
+        request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+        response_deserializer=router__pb2.ClusterDescription.FromString,
+        )
+
+
+class ClusterServicer(object):
+  """Cluster service gives some descriptions about the cluster where the service
+  is running.
+  """
+
+  def ClusterInfo(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+
+def add_ClusterServicer_to_server(servicer, server):
+  rpc_method_handlers = {
+      'ClusterInfo': grpc.unary_stream_rpc_method_handler(
+          servicer.ClusterInfo,
+          request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+          response_serializer=router__pb2.ClusterDescription.SerializeToString,
+      ),
+  }
+  generic_handler = grpc.method_handlers_generic_handler(
+      'Cluster', rpc_method_handlers)
   server.add_generic_rpc_handlers((generic_handler,))
