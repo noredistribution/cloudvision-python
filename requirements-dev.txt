@@ -3,3 +3,4 @@ mypy-protobuf
 mypy
 pytest
 numpy
+pyyaml
