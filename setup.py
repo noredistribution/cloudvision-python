@@ -5,11 +5,10 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="AerisRequester",
+    name="cloudvision",
     version="0.0.1",
-    author="lgroux",
-    author_email="lgroux@arista.com",
-    description="A python module to query date from aeris through grpc",
+    description="A Python library for Arista's CloudVision APIs.",
+    maintainer_email="support@arista.com",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://gitlab.aristanetworks.com/lgroux/AerisRequester",

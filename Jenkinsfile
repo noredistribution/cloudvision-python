@@ -1,4 +1,5 @@
 pipeline{
+    agent { label 'jenkins-slave-cloud' }
     stages{
         stage("A"){
 		agent {
