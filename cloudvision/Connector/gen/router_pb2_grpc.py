@@ -48,7 +48,7 @@ class RouterV1Servicer(object):
   pass
 
   def Publish(self, request, context):
-    """Publish is used to send notifications to aeris.
+    """Publish is used to send notifications to CloudVision.
     They will be saved into the storage and sent to all
     the clients subscribing to the same device/path.
 
@@ -73,13 +73,13 @@ class RouterV1Servicer(object):
 
     * Publish is asynchronous by default:
     When the call to Publish ends without error, it means the data has been
-    correctly received by aeris but not stored yet.
+    correctly received by CloudVision but not stored yet.
     So, if a "get" call is done right after the Publish call, the get might
     not return the data just published.
     When the "sync" field is set to true in PublishRequest, the Publish
     will be synchronous:
     When the call to Publish ends without error, it means the data has been
-    correctly received AND stored by aeris.
+    correctly received AND stored by CloudVision.
     So, if a "get" call is done right after the synchronous Publish call, the get will
     return the data just published (unless someone else stored more recent data of course).
 

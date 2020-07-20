@@ -1,13 +1,13 @@
-# AerisRequester
+# CloudVision Connector
 
-AerisRequester is a Python implementation of a GRPC client for Aeris. It takes care
+CloudVision Connector is a Python implementation of a GRPC client for CloudVision. It takes care
 of getting and publishing data and datasets, and also provides utilities for data
-representation similar to the ones found in Aeris Query Language.
+representation similar to the ones found in CloudVision Query Language.
 
 ## Getting started
 
 This is a small example advertising a few of the GRPC client capabilities.
-This example prints info from all devices streaming into Aeris.
+This example prints info from all devices streaming into CloudVision.
 
 ```
 targetDataset = "analytics"

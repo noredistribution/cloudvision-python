@@ -13,14 +13,14 @@ message Notification {
     google.protobuf.Timestamp timestamp = 1; // Timestamp in nanoseconds resolution.
     string path = 2;  // Deprecated
     bool delete_all = 3;
-    repeated bytes deletes = 4; // BDSN encoded
+    repeated bytes deletes = 4; // NEAT encoded
     message Update {
-        bytes key = 1; // BDSN encoded
-        bytes value = 2; // BDSN encoded
+        bytes key = 1; // NEAT encoded
+        bytes value = 2; // NEAT encoded
     }
     repeated Update updates = 5;
-    repeated bytes retracts = 6; // BDSN encoded
-    repeated bytes path_elements = 7; // BDSN encoded
+    repeated bytes retracts = 6; // NEAT encoded
+    repeated bytes path_elements = 7; // NEAT encoded
 }
 
 message Dataset {

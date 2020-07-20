@@ -1,7 +1,7 @@
 import msgpack
 import io
-from AerisRequester.codec import Float32, PointerType, WildcardType
-from AerisRequester.codec import Wildcard, Path, FrozenDict
+from cloudvision.Connector.codec import Float32, PointerType, WildcardType
+from cloudvision.Connector.codec import Wildcard, Path, FrozenDict
 
 
 class Encoder(object):

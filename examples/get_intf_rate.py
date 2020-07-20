@@ -1,4 +1,4 @@
-from AerisRequester.grpc_client import GRPCClient, create_query
+from cloudvision.Connector.grpc_client import GRPCClient, create_query
 from utils import pretty_print
 from parser import base
 

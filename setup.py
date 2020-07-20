@@ -11,11 +11,10 @@ setuptools.setup(
     maintainer_email="support@arista.com",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://gitlab.aristanetworks.com/lgroux/AerisRequester",
+    url="https://github.com/aristanetworks/cloudvision-python",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
 )

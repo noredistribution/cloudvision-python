@@ -222,9 +222,9 @@ message Filter {
 
 // PublishRequest
 message PublishRequest {
-   // The batch of notification sent to aeris
+   // The batch of notification sent to CloudVision
    NotificationBatch batch = 1;
-   // Used to have a synchronous or asynchronous write to the aeris storage
+   // Used to have a synchronous or asynchronous write to the CloudVision storage
    bool sync = 2;
    // If provided, the batch notification will be stored only if one of the
    // following conditions are true:
@@ -311,7 +311,7 @@ message CreateSessionResponse {
 }
 
 service RouterV1 {
-   // Publish is used to send notifications to aeris.
+   // Publish is used to send notifications to CloudVision.
    // They will be saved into the storage and sent to all
    // the clients subscribing to the same device/path.
    //
@@ -336,13 +336,13 @@ service RouterV1 {
    //
    // * Publish is asynchronous by default:
    // When the call to Publish ends without error, it means the data has been
-   // correctly received by aeris but not stored yet.
+   // correctly received by CloudVision but not stored yet.
    // So, if a "get" call is done right after the Publish call, the get might
    // not return the data just published.
    // When the "sync" field is set to true in PublishRequest, the Publish
    // will be synchronous:
    // When the call to Publish ends without error, it means the data has been
-   // correctly received AND stored by aeris.
+   // correctly received AND stored by CloudVision.
    // So, if a "get" call is done right after the synchronous Publish call, the get will
    // return the data just published (unless someone else stored more recent data of course).
    //

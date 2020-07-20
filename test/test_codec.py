@@ -2,8 +2,8 @@
 
 import os.path
 
-from AerisRequester.codec import Decoder, Encoder, Float32, FrozenDict
-from AerisRequester.codec.custom_types import Path
+from cloudvision.Connector.codec import Decoder, Encoder, Float32, FrozenDict
+from cloudvision.Connector.codec.custom_types import Path
 
 import numpy as np
 

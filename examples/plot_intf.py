@@ -1,8 +1,8 @@
 import sys
 from google.protobuf.timestamp_pb2 import Timestamp
 import datetime
-from AerisRequester.grpc_client import GRPCClient, create_query
-from AerisRequester import process_notifs, sort_dict
+from cloudvision.Connector.grpc_client import GRPCClient, create_query
+from cloudvision.Connector import process_notifs, sort_dict
 import matplotlib.pyplot as plt
 from parser import base
 

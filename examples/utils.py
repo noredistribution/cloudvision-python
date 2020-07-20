@@ -1,5 +1,5 @@
 import json
-from AerisRequester.codec import Path, FrozenDict
+from cloudvision.Connector.codec import Path, FrozenDict
 
 
 def pretty_print(dataDict):

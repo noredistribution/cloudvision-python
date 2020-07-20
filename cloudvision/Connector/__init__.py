@@ -1,5 +1,5 @@
 import logging
-name = "AerisRequester"
+name = "cloudvision.Connector"
 
 
 def process_notifs(stream, paths={}, keys={}, nominalKeys=None):

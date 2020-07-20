@@ -1,10 +1,10 @@
 from datetime import datetime
 from typing import List, Optional, Any, Tuple, Union
 
-import AerisRequester.codec as codec
-import AerisRequester.gen.notification_pb2 as ntf
-import AerisRequester.gen.router_pb2 as rtr
-import AerisRequester.gen.router_pb2_grpc as rtr_client
+import cloudvision.Connector.codec as codec
+import cloudvision.Connector.gen.notification_pb2 as ntf
+import cloudvision.Connector.gen.router_pb2 as rtr
+import cloudvision.Connector.gen.router_pb2_grpc as rtr_client
 
 import grpc
 import google.protobuf.timestamp_pb2 as pbts
@@ -202,7 +202,7 @@ class GRPCClient(object):
                 compare: Optional[UPDATE_TYPE] = None) -> None:
         """
         Publish creates and executes a Publish protobuf message.
-        refer to AerisRequester/protobufs/router.proto:124
+        refer to cloudvision/Connector/protobufs/router.proto:124
         default to sync publish being true so that changes are reflected
         """
         comp_pb = None
@@ -225,7 +225,7 @@ class GRPCClient(object):
 
     def get_datasets(self, types: Optional[List[str]] = None):
         """
-        GetDatasets retrieves all the datasets streaming on Aeris.
+        GetDatasets retrieves all the datasets streaming on CloudVision.
         types, if present, filter the queried dataset by types
         """
         req = rtr.DatasetsRequest(

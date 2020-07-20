@@ -1,5 +1,5 @@
 from google.protobuf.timestamp_pb2 import Timestamp
-from AerisRequester.grpc_client import GRPCClient, create_notification
+from cloudvision.Connector.grpc_client import GRPCClient, create_notification
 from parser import base
 
 
