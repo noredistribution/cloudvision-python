@@ -47,7 +47,8 @@ def main(args):
             get_all_req.time.start.FromNanoseconds(int(args.start))
         else:
             get_all_req.time.start.FromJsonString(args.start)
-        get_all_req.time.end.GetCurrentTime()  # set end to current time in case end is not specified
+        # set end to current time in case end is not specified
+        get_all_req.time.end.GetCurrentTime()
 
     if args.end:
         if args.end.isdigit():
@@ -61,7 +62,8 @@ def main(args):
         event_filter.event_type.value = args.event_type
 
     if args.severity:
-        event_filter.severity = SEVERITIES.index(args.severity) + 1  # enum with val 0 is always unset
+        # enum with val 0 is always unset
+        event_filter.severity = SEVERITIES.index(args.severity) + 1
 
     get_all_req.partial_eq_filter.append(event_filter)
     print(f"acking events that match the filter {get_all_req}")
@@ -96,10 +98,13 @@ if __name__ == '__main__':
           "--end 2020-02-21T00:00:01.000000001Z\n"
           "4) Acknowledge all events with INFO severity:\n"
           "\tpython ack_events.py --severity INFO")
-    parser = argparse.ArgumentParser(description=ds,
+    parser = argparse.ArgumentParser(
+        description=ds,
         formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('--server', required=True,
-                        help="CloudVision server to connect to in <host>:<port> format")
+    parser.add_argument(
+        '--server',
+        required=True,
+        help="CloudVision server to connect to in <host>:<port> format")
     parser.add_argument('--start',
                         help=("acknowledge events after this time. "
                               "RFC3339 date string or Unix nanosecond timestamp."))

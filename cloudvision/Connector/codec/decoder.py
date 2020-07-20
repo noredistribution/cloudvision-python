@@ -27,8 +27,8 @@ class Decoder(object):
                                            object_pairs_hook=pair_hook,
                                            ext_hook=ext_hook)
 
-    def decode_array(self, l):
-        return [self.__postProcess(v) for v in l]
+    def decode_array(self, arr):
+        return [self.__postProcess(v) for v in arr]
 
     def decode_map(self, m):
         return FrozenDict({

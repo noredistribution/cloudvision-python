@@ -11,7 +11,7 @@ def main(apiserverAddr, token=None, cert=None, key=None, ca=None,
                                                               hours=hours,
                                                               minutes=minutes)
     start = Timestamp()
-    start.FromDatetime(startDtime) # type: ignore
+    start.FromDatetime(startDtime)  # type: ignore
     pathElts = [
         "events",
         "activeEvents"

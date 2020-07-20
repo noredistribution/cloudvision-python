@@ -20,10 +20,10 @@ def group(it, n):  # noqa: D401
     return zip(*[iter(it)] * n)
 
 
-def make_complex(l):
+def make_complex(pairs):
     """make_complex creates a complex dictionary using a list of pairs."""
     res = {}
-    for k, v in group(l, 2):
+    for k, v in group(pairs, 2):
         if isinstance(k, dict):
             k = FrozenDict(k)
         res[k] = v
