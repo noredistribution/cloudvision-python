@@ -2,19 +2,26 @@
 # Use of this source code is governed by the Apache License 2.0
 # that can be found in the COPYING file.
 
-# Acknowledge CVP events.
-# Acknowledging a CVP event hides the event from the default view
+# Get CVP events
+# Acknowledges selected CVP events if the --ack flag is set.
+# Acknowledging a CVP event hides the event from the default view.
 #
 # Examples:
-# 1) Acknowledge all events:
-#   $ python ack_events.py
-# 2) Acknowledge all events after date:
+# 1) Get all events:
+#   $ python get_events.py
+# 2) Get all events after date:
 #   $ python ack_events.py --start 2020-02-20T00:00:01.000000001Z
-# 3) Acknowledge all INSUFFICIENT_PEER_LAG_REDUNDANCY events between two dates:
+# 3) Get all INSUFFICIENT_PEER_LAG_REDUNDANCY events between two dates:
 #   $ python ack_events.py --event-type INSUFFICIENT_PEER_LAG_REDUNDANCY \
 #   --start 2020-02-20T00:00:01.000000001Z \
 #   --end 2020-02-21T00:00:01.000000001Z
-# 4) Acknowledge all events with INFO severity:
+# 4) Get all INSUFFICIENT_PEER_LAG_REDUNDANCY events between two dates
+#   and acknowledge them:
+#   $ python ack_events.py --event-type INSUFFICIENT_PEER_LAG_REDUNDANCY \
+#   --start 2020-02-20T00:00:01.000000001Z \
+#   --end 2020-02-21T00:00:01.000000001Z \
+#   --ack
+# 5) Get all events with INFO severity:
 #   $ python ack_events.py --severity INFO
 import argparse
 
@@ -68,14 +75,15 @@ def main(args):
         event_filter.severity = SEVERITIES.index(args.severity) + 1
 
     get_all_req.partial_eq_filter.append(event_filter)
-    print(f"acking events that match the filter {get_all_req}")
+    print(f"selecting events that match the filter {get_all_req}")
 
     with grpc.secure_channel(args.server, connCreds) as channel:
         event_stub = service.EventServiceStub(channel)
         event_ack_stub = service.EventAnnotationConfigServiceStub(channel)
         for resp in event_stub.GetAll(get_all_req, timeout=RPC_TIMEOUT):
-            if not resp.value.ack.ack.value:
-                print(f"acking event {resp}")
+            print(f"{resp}")
+            if args.ack and not resp.value.ack.ack.value:
+                print("acking event")
                 req = messages.EventAnnotationConfigSetRequest(
                     value=models.EventAnnotationConfig(
                         key=resp.value.key,
@@ -86,19 +94,25 @@ def main(args):
 
 
 if __name__ == '__main__':
-    ds = ("Acknowledge CVP events. "
+    ds = ("Get CVP events. "
+          "Acknowledges selected CVP events if the --ack flag is set. "
           "Acknowledging a CVP event hides the event from the default view. "
           "Examples:\n"
-          "1) Acknowledge all events:\n"
+          "1) Get all events:\n"
           "\tpython ack_events.py\n"
-          "2) Acknowledge all events after date:\n"
+          "2) Get all events after date:\n"
           "\tpython ack_events.py --start 2020-02-20T00:00:01.000000001Z\n"
-          "3) Acknowledge all INSUFFICIENT_PEER_LAG_REDUNDANCY events between "
-          "two dates\n"
+          "3) Get all INSUFFICIENT_PEER_LAG_REDUNDANCY events between "
+          "two dates:\n"
           "\tpython ack_events.py --event-type "
           "INSUFFICIENT_PEER_LAG_REDUNDANCY --start 2020-02-20T00:00:01.000000001Z "
           "--end 2020-02-21T00:00:01.000000001Z\n"
-          "4) Acknowledge all events with INFO severity:\n"
+          "4) Get all INSUFFICIENT_PEER_LAG_REDUNDANCY events between "
+          "two dates and acknowledge them:\n"
+          "\tpython ack_events.py --event-type "
+          "INSUFFICIENT_PEER_LAG_REDUNDANCY --start 2020-02-20T00:00:01.000000001Z "
+          "--end 2020-02-21T00:00:01.000000001Z --ack\n"
+          "5) Get all events with INFO severity:\n"
           "\tpython ack_events.py --severity INFO")
     parser = argparse.ArgumentParser(
         description=ds,
@@ -108,16 +122,20 @@ if __name__ == '__main__':
         required=True,
         help="CloudVision server to connect to in <host>:<port> format")
     parser.add_argument('--start',
-                        help=("acknowledge events after this time. "
+                        help=("select events after this time. "
                               "RFC3339 date string or Unix nanosecond timestamp."))
     parser.add_argument('--end',
-                        help=("acknowledge events before this time. "
+                        help=("select events before this time. "
                               "RFC3339 date string or Unix nanosecond timestamp. "
                               "Must also provide start time argument"))
-    parser.add_argument("--event-type", help="acknowledge events of this type only")
+    parser.add_argument("--event-type", help="select events of this type only")
     parser.add_argument("--severity",
-                        help="acknowledge events of this severity only",
+                        help="select events of this severity only",
                         choices=SEVERITIES)
+    parser.add_argument("--ack",
+                        help="acknowledge selected events",
+                        action='store_true',
+                        default=False)
     parser.add_argument("--token-file", required=True,
                         type=argparse.FileType('r'), help="file with access token")
     parser.add_argument("--cert-file", type=argparse.FileType('rb'),
