@@ -1,3 +1,7 @@
+# Copyright (c) 2020 Arista Networks, Inc.
+# Use of this source code is governed by the Apache License 2.0
+# that can be found in the COPYING file.
+
 from google.protobuf.timestamp_pb2 import Timestamp
 from cloudvision.Connector.grpc_client import GRPCClient, create_notification
 from parser import base
