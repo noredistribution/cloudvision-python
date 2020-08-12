@@ -8,7 +8,7 @@ from utils import pretty_print
 from parser import base
 
 
-def main(apiserverAddr, dId, token=None, cert=None, ca=None):
+def main(apiserverAddr, dId, token=None, certs=None, ca=None, key=None):
     pathElts = [
         "Sysdb",
         "interface",
@@ -24,7 +24,7 @@ def main(apiserverAddr, dId, token=None, cert=None, ca=None):
         create_query([(pathElts, ["active"])], dId)
     ]
 
-    with GRPCClient(apiserverAddr) as client:
+    with GRPCClient(apiserverAddr, token=token, key=key, ca=ca, certs=certs) as client:
         for batch in client.get(query):
             for notif in batch["notifications"]:
                 pretty_print(notif["updates"])
@@ -36,5 +36,5 @@ if __name__ == "__main__":
                       help="device id/serial number to query intfStatus for")
     args = base.parse_args()
 
-    exit(main(args.apiserverAddr, args.deviceId, token=args.tokenFile,
-         cert=args.certFile, ca=args.caFile))
+    exit(main(args.apiserver, args.deviceId, token=args.tokenFile,
+         certs=args.certFile, ca=args.caFile))
