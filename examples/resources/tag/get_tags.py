@@ -16,6 +16,16 @@
 #    python3 get_tags.py --server 10.83.12.79:8443 --token-file token.txt \
 #    --cert-file cvp.crt --device_id 99500CA623B639E85FE0E684862C7103 \
 #    --interface_id Ethernet1
+#
+# 4) Get all interfaces that have a specific tag assigned:
+#    python3 get_tags.py --server 10.83.12.79:8443 --token-file token.txt \
+#    --cert-file cvp.crt --device_id 99500CA623B639E85FE0E684862C7103 \
+#    --tag_name 'lldp_chassis'
+#
+# 5) Get all interfaces that have a tag with a specific value:
+#    python3 get_tags.py --server 10.83.12.79:8443 --token-file token.txt \
+#    --cert-file cvp.crt --device_id 99500CA623B639E85FE0E684862C7103 \
+#    --tag_value 'forced'
 
 
 import argparse
@@ -57,8 +67,9 @@ def main(args):
         tag_filter.key.interface_id.value = args.interface_id
 
     if args.tag_name:
-        tag_name = args.tag_name
-
+        tag_filter.key.label.value = args.tag_name
+    if args.tag_value:
+        tag_filter.key.value.value = args.tag_value
     get_all_req.partial_eq_filter.append(tag_filter)
 
     # initialize a connection to the server using our connection settings (auth + TLS)
@@ -70,7 +81,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    ds = ("Get tag per interface per device. ")
+    ds = ("Get all interface tags matching a single filter.")
     parser = argparse.ArgumentParser(
         description=ds,
         formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -81,6 +92,8 @@ if __name__ == '__main__':
     parser.add_argument("--device_id", help="Device SN")
     parser.add_argument("--interface_id", help="Interface ID")
     parser.add_argument("--tag_name", help="Name of the tag, e.g.: lldp_chassis")
+    parser.add_argument("--tag_value", help="Value of the tag, e.g:"
+                        "Chassis MAC of neighbor in xx:xx:xx:xx:xx format")
     parser.add_argument("--token-file", required=True,
                         type=argparse.FileType('r'), help="file with access token")
     parser.add_argument("--cert-file", type=argparse.FileType('rb'),

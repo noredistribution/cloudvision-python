@@ -69,7 +69,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    ds = ("Set tag assignement for an interface."
+    ds = ("Assign a tag to an interface."
           "Example:"
           "python3 itag.py --server 10.83.12.79:8443 --token-file token.txt \
             --cert-file cvp.crt --device_id 99500CA623B639E85FE0E684862C7103 \
