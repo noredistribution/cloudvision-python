@@ -35,12 +35,10 @@ def main(args):
         channelCreds = grpc.ssl_channel_credentials()
     connCreds = grpc.composite_channel_credentials(channelCreds, callCreds)
 
-
     if args.tag_value:
         tag_value = args.tag_value
     if args.tag_name:
         tag_name = args.tag_name
-        
     # initialize a connection to the server using our connection settings (auth + TLS)
     with grpc.secure_channel(args.server, connCreds) as channel:
         tag_stub = service.InterfaceTagConfigServiceStub(channel)
@@ -54,8 +52,6 @@ def main(args):
             )
         )
         tag_stub.Set(req, timeout=RPC_TIMEOUT)
-
-
 
 if __name__ == '__main__':
     ds = ("Create a interface tag "
