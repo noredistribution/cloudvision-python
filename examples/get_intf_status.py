@@ -37,4 +37,4 @@ if __name__ == "__main__":
     args = base.parse_args()
 
     exit(main(args.apiserver, args.deviceId, token=args.tokenFile,
-         certs=args.certFile, ca=args.caFile))
+              certs=args.certFile, ca=args.caFile))

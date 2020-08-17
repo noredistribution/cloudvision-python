@@ -22,6 +22,7 @@ from arista.inventory.v1 import services
 
 RPC_TIMEOUT = 30  # in seconds
 
+
 def get_all(stub, only_active, only_inactive):
     """
     Prints the hostname of all devices known to the system.
@@ -58,7 +59,7 @@ def get_one(stub, serial):
     """
     # create a unary device request, setting the key to the given serial
     req = services.DeviceRequest(
-        key= { "device_id" : wrappers.StringValue(value = serial) }
+        key={"device_id": wrappers.StringValue(value=serial)}
     )
     # issue the request and print it
     resp = stub.GetOne(req)
@@ -95,7 +96,6 @@ def main(args):
             get_all(stub, args.active, args.inactive)
         else:
             get_one(stub, args.device)
-
 
 
 if __name__ == '__main__':

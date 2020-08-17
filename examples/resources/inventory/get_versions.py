@@ -18,6 +18,7 @@ from arista.inventory.v1 import services
 
 RPC_TIMEOUT = 30  # in seconds
 
+
 def get_device_with_filter(stub, serial, hostname):
     """
     Fetch single device from the inventory by hostname (and optionally serial)
@@ -34,10 +35,10 @@ def get_device_with_filter(stub, serial, hostname):
 
     # create the filter model with hostname and optional key set
     filt = models.Device(
-        key = device_key,
-        hostname = wrappers.StringValue(value=hostname)
+        key=device_key,
+        hostname=wrappers.StringValue(value=hostname)
     )
-    
+
     # add the filter to the request
     get_all_req.partial_eq_filter.append(filt)
 

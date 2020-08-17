@@ -12,18 +12,19 @@ import requests
 import ssl
 import json
 
+
 def main(args):
     r = requests.post('https://' + args.server + '/cvpservice/login/authenticate.do',
-      auth=(args.username, args.password), verify=args.ssl is False)
+                      auth=(args.username, args.password), verify=args.ssl is False)
 
     r.json()['sessionId']
 
     with open("token.txt", "w") as f:
-      f.write(r.json()['sessionId'])
+        f.write(r.json()['sessionId'])
 
     if args.ssl:
         with open("cvp.crt", "w") as f:
-          f.write(ssl.get_server_certificate((args.server, 443)))
+            f.write(ssl.get_server_certificate((args.server, 443)))
 
 
 if __name__ == '__main__':
@@ -36,11 +37,11 @@ if __name__ == '__main__':
         required=True,
         help="CloudVision server to connect to in <host>:<port> format")
     parser.add_argument("--username", required=True, type=str,
-        help="Username to authorize with")
+                        help="Username to authorize with")
     parser.add_argument("--password", required=True, type=str,
-        help="Password to authorize with")
+                        help="Password to authorize with")
     parser.add_argument("--ssl", action="store_true",
-        help="Save the self-signed certficate to cvp.crt")
+                        help="Save the self-signed certficate to cvp.crt")
 
     args = parser.parse_args()
     main(args)

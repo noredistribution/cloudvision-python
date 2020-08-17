@@ -14,7 +14,6 @@
 # --interface_id Ethernet7 --tag_name "lldp_mode" --tag_value "default"
 
 
-
 import argparse
 
 import grpc
@@ -25,6 +24,7 @@ import arista.tag.v1.services.gen_pb2_grpc as service
 from google.protobuf import wrappers_pb2 as wrappers
 
 RPC_TIMEOUT = 30  # in seconds
+
 
 def main(args):
     # read the file containing a session token to authenticate with
@@ -67,6 +67,7 @@ def main(args):
         )
         tag_stub.Set(req, timeout=RPC_TIMEOUT)
 
+
 if __name__ == '__main__':
     ds = ("Set tag assignement for an interface."
           "Example:"
@@ -87,13 +88,13 @@ if __name__ == '__main__':
         required=True,
         help="CloudVision server to connect to in <host>:<port> format")
     parser.add_argument("--device_id", required=True, help="Device SN")
-    parser.add_argument("--interface_id", required=True,help="Interface ID")
+    parser.add_argument("--interface_id", required=True, help="Interface ID")
     parser.add_argument("--tag_value", required=True, help="Value of the tag,"
                         "e.g: Chassis MAC of neighbor in xx:xx:xx:xx:xx format")
     parser.add_argument("--tag_name", required=True, help="Name of the tag"
                                                           "e.g.: lldp_chassis")
     parser.add_argument("--token-file", required=True,
-                     type=argparse.FileType('r'), help="file with access token")
+                        type=argparse.FileType('r'), help="file with access token")
     parser.add_argument("--cert-file", type=argparse.FileType('rb'),
                         help="certificate to use as root CA")
     args = parser.parse_args()

@@ -19,6 +19,7 @@ from google.protobuf import wrappers_pb2 as wrappers
 
 RPC_TIMEOUT = 30  # in seconds
 
+
 def main(args):
     # read the file containing a session token to authenticate with
     token = args.token_file.read().strip()
@@ -53,13 +54,14 @@ def main(args):
         )
         tag_stub.Set(req, timeout=RPC_TIMEOUT)
 
+
 if __name__ == '__main__':
     ds = ("Create a interface tag "
-    "Examples:\n"
-    "python3 create_tag.py --server 10.83.12.79:8443 --token-file token.txt \
-    "--cert-file cvp.crt --tag_name \"lldp_chassis\" \""
-    "--tag_value \"50:08:00:0d:00:08\""
-    )
+          "Examples:\n"
+          "python3 create_tag.py --server 10.83.12.79:8443 --token-file token.txt"
+          "--cert-file cvp.crt --tag_name \"lldp_chassis\" \""
+          "--tag_value \"50:08:00:0d:00:08\""
+          )
     parser = argparse.ArgumentParser(
         description=ds,
         formatter_class=argparse.RawDescriptionHelpFormatter)

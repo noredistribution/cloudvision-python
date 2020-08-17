@@ -28,6 +28,7 @@ import arista.tag.v1.services.gen_pb2_grpc as service
 
 RPC_TIMEOUT = 30  # in seconds
 
+
 def main(args):
     # read the file containing a session token to authenticate with
     token = args.token_file.read().strip()
@@ -66,7 +67,6 @@ def main(args):
         print(f"Printing all tag assignments based on the filters:")
         for resp in tag_stub.GetAll(get_all_req, timeout=RPC_TIMEOUT):
             print(resp.value)
-
 
 
 if __name__ == '__main__':

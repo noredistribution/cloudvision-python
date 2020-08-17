@@ -34,7 +34,9 @@ def make_complex(pairs):
     return FrozenDict(res)
 
 
-identity = lambda x: x  # noqa: E731
+def identity(x):
+    return x  # noqa: E731
+
 
 preprocessing = {
     "bool": identity,
