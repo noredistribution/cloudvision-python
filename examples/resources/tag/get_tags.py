@@ -75,7 +75,7 @@ def main(args):
     # initialize a connection to the server using our connection settings (auth + TLS)
     with grpc.secure_channel(args.server, connCreds) as channel:
         tag_stub = service.InterfaceTagAssignmentConfigServiceStub(channel)
-        print(f"Printing all tag assignments based on the filters:")
+        print("Printing all tag assignments based on the filters:")
         for resp in tag_stub.GetAll(get_all_req, timeout=RPC_TIMEOUT):
             print(resp.value)
 
