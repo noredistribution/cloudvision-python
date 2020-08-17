@@ -10,7 +10,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="cloudvision",
-    version="0.0.1",
+    version="1.0.0",
     description="A Python library for Arista's CloudVision APIs.",
     maintainer_email="support@arista.com",
     long_description=long_description,

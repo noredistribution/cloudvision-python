@@ -3,11 +3,6 @@ import sys
 from google.protobuf.descriptor import (
     Descriptor as google___protobuf___descriptor___Descriptor,
     EnumDescriptor as google___protobuf___descriptor___EnumDescriptor,
-    FileDescriptor as google___protobuf___descriptor___FileDescriptor,
-)
-
-from google.protobuf.internal.enum_type_wrapper import (
-    _EnumTypeWrapper as google___protobuf___internal___enum_type_wrapper____EnumTypeWrapper,
 )
 
 from google.protobuf.message import (
@@ -15,8 +10,10 @@ from google.protobuf.message import (
 )
 
 from typing import (
-    NewType as typing___NewType,
+    List as typing___List,
     Optional as typing___Optional,
+    Tuple as typing___Tuple,
+    Union as typing___Union,
     cast as typing___cast,
 )
 
@@ -29,32 +26,49 @@ builtin___bool = bool
 builtin___bytes = bytes
 builtin___float = float
 builtin___int = int
+builtin___str = str
+if sys.version_info < (3,):
+    builtin___buffer = buffer
+    builtin___unicode = unicode
 
 
-DESCRIPTOR: google___protobuf___descriptor___FileDescriptor = ...
-
-ShardingFunctionValue = typing___NewType('ShardingFunctionValue', builtin___int)
-type___ShardingFunctionValue = ShardingFunctionValue
-ShardingFunction: _ShardingFunction
-class _ShardingFunction(google___protobuf___internal___enum_type_wrapper____EnumTypeWrapper[ShardingFunctionValue]):
+class ShardingFunction(builtin___int):
     DESCRIPTOR: google___protobuf___descriptor___EnumDescriptor = ...
-    DATASETANDPATH = typing___cast(ShardingFunctionValue, 0)
-    DATASET = typing___cast(ShardingFunctionValue, 1)
-DATASETANDPATH = typing___cast(ShardingFunctionValue, 0)
-DATASET = typing___cast(ShardingFunctionValue, 1)
-type___ShardingFunction = ShardingFunction
+    @classmethod
+    def Name(cls, number: builtin___int) -> builtin___str: ...
+    @classmethod
+    def Value(cls, name: builtin___str) -> 'ShardingFunction': ...
+    @classmethod
+    def keys(cls) -> typing___List[builtin___str]: ...
+    @classmethod
+    def values(cls) -> typing___List['ShardingFunction']: ...
+    @classmethod
+    def items(cls) -> typing___List[typing___Tuple[builtin___str, 'ShardingFunction']]: ...
+    DATASETANDPATH = typing___cast('ShardingFunction', 0)
+    DATASET = typing___cast('ShardingFunction', 1)
+DATASETANDPATH = typing___cast('ShardingFunction', 0)
+DATASET = typing___cast('ShardingFunction', 1)
+global___ShardingFunction = ShardingFunction
 
 class Sharding(google___protobuf___message___Message):
     DESCRIPTOR: google___protobuf___descriptor___Descriptor = ...
-    shard: builtin___int = ...
-    numShards: builtin___int = ...
-    shardingFunc: type___ShardingFunctionValue = ...
+    shard = ... # type: builtin___int
+    numShards = ... # type: builtin___int
+    shardingFunc = ... # type: global___ShardingFunction
 
     def __init__(self,
         *,
         shard : typing___Optional[builtin___int] = None,
         numShards : typing___Optional[builtin___int] = None,
-        shardingFunc : typing___Optional[type___ShardingFunctionValue] = None,
+        shardingFunc : typing___Optional[global___ShardingFunction] = None,
         ) -> None: ...
+    if sys.version_info >= (3,):
+        @classmethod
+        def FromString(cls, s: builtin___bytes) -> Sharding: ...
+    else:
+        @classmethod
+        def FromString(cls, s: typing___Union[builtin___bytes, builtin___buffer, builtin___unicode]) -> Sharding: ...
+    def MergeFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
+    def CopyFrom(self, other_msg: google___protobuf___message___Message) -> None: ...
     def ClearField(self, field_name: typing_extensions___Literal[u"numShards",b"numShards",u"shard",b"shard",u"shardingFunc",b"shardingFunc"]) -> None: ...
-type___Sharding = Sharding
+global___Sharding = Sharding
