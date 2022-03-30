@@ -131,9 +131,9 @@ def backupConfig(serverType, data):
 
 
 if __name__ == "__main__":
-    ds = ("Synchronizes CVP Event Generation Configuration between two clusters\n"
+    ds = ("Synchronizes CVP Templates and Action Bundles between two clusters\n"
           "Usage:\n"
-          "\tpython3 sync_events_cfg.py --src=10.83.12.79:8443 --srcauth=token,token1.txt,cvp1.crt "
+          "\tpython3 sync_cc_templates.py --src=10.83.12.79:8443 --srcauth=token,token1.txt,cvp1.crt "
           "--dst=10.83.12.173:8443 --dstauth=token,token2.txt,cvp2.crt"
           )
     base = argparse.ArgumentParser(description=ds,
