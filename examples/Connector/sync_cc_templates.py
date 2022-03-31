@@ -168,13 +168,13 @@ if __name__ == "__main__":
     pList = ['template', 'actionBundle']
     cc_ptrs = getCcPath(clientDst)
 
-    ccv2 = getCcPathVersions(clientDst, "template")
     for ptr in pList:
+        cc_versions = getCcPathVersions(clientDst, ptr)
         if ptr not in list(cc_ptrs.keys()):
             pathElts = ["changecontrol"]
             ptrData = {ptr: Path(keys=["changecontrol", ptr])}
             publish(clientDst, dataset, pathElts, ptrData)
-        if ccv2 == {}:
+        if cc_versions == {}:
             pathElts = ["changecontrol", ptr]
             ptrData = {"v1": Path(keys=["changecontrol", ptr, "v1"])}
             publish(clientDst, dataset, pathElts, ptrData)
