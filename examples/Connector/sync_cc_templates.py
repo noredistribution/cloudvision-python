@@ -145,7 +145,7 @@ if __name__ == "__main__":
                            token=args.tokenFile, ca=args.caFile)
     clientDst = get_client(args.dst, certs=args.certFileDst, key=args.keyFileDst,
                            token=args.tokenFileDst, ca=args.caFileDst)
-    # backup the event configurations from each server
+    # backup the CC templates and actionBundles for each server
     # this will create 4 files:
     #    - backupsource-cvp-tmpl.json
     #    - backupdest-cvp-tmpl.json
